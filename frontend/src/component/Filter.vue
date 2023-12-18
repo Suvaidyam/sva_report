@@ -56,17 +56,17 @@ export default {
             this.isOpenFilter = !this.isOpenFilter;
 
         },
-        closeDropdown(event) {
+        closeFilter(event) {
             if (!this.$refs?.filterContainer?.contains(event?.target)) {
                 this.isOpenFilter = false;
             }
         },
     },
     beforeDestroy() {
-        window.removeEventListener('click', this.closeDropdown);
+        window.removeEventListener('click', this.closeFilter);
     },
     mounted(){
-        window.addEventListener('click', this.closeDropdown);
+        window.addEventListener('click', this.closeFilter);
     }
 
 };
