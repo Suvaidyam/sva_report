@@ -18,6 +18,8 @@
                 </div>
             </div>
             <div class="w-full h-full overflow-y-scroll">
+                <Loader v-if="activeTab.index === 1"/>
+                {{ activeTab }}
                 <!-- <ListView
                     class="h-[250px]"
                     :columns="[
@@ -42,8 +44,8 @@
 </template>
 
 <script setup>
-import {FormControl,ListView} from 'frappe-ui'
- 
+import {FormControl} from 'frappe-ui'
+import Loader from '@/component/Loader.vue'
  const props = defineProps({
 	doctype: {
 		type: String,
@@ -57,6 +59,14 @@ import {FormControl,ListView} from 'frappe-ui'
 		type: String,
 		required: false,
 	},
+    activeTab:{
+        type: Object,
+		required: true, 
+    },
+    isloading:{
+        type:Boolean,
+        required:true
+    }
 	// filterConfig: {
 	// 	type: Array,
 	// 	required: true,
