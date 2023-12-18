@@ -7,7 +7,7 @@
                     :placeholder="item.placeholder" :disabled="item.disabled" />
             </div>
             <div class="flex items-center gap-2">
-                <Button :icon="'filter'" label="Fiter" class="bg-gray-100 rounded-md px-2 py-0.5 text-gray-500"></Button>
+                <Filter/>
                 <div class="flex">
                     <Button size="md" :icon="'align-left'" class="rounded-l-md border rounded-r-none"></Button>
                     <Dropdown placement="left" class="bg-gray-50 rounded-r-sm rounded-l-none" :options="dropdown" :button="{
@@ -35,6 +35,7 @@
 import { FormControl, List, Dropdown } from 'frappe-ui'
 import {ref} from 'vue'
 import Loader from '@/component/Loader.vue' 
+import Filter from '@/component/Filter.vue' 
 
 const props = defineProps({
     doctype: {
