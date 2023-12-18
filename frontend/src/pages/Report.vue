@@ -42,5 +42,6 @@ const changeTab = (index,title) => {
   };
   console.log(title)
 };
+const d = ref({})
 </script>
   
