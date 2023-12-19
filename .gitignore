@@ -5,7 +5,7 @@
 tags
 node_modules
 __pycache__
-public
+sva_report/public
 sva_report/www
 frontend/package-lock.json
 package-lock.json
