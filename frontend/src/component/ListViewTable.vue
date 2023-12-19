@@ -1,13 +1,14 @@
 <template>
     <div class="w-full mx-auto border h-full relative rounded-md flex flex-col">
         <!-- top -->
-        <div class="w-full sticky top-0 h-14 border-b flex justify-between items-center px-4 gap-2">
+        <div
+            class="w-full sticky top-0 md:h-14 border-b flex flex-col md:flex-row py-1 justify-between items-center px-4 gap-2">
             <div class="" v-for="item in filters">
-                <FormControl v-model="formData.id" :type="item.type" :name="item.name" size="sm" variant="subtle" :options="item?.option ?? []"
-                    :placeholder="item.placeholder" :disabled="item.disabled" />
+                <FormControl v-model="formData.id" :type="item.type" :name="item.name" size="sm" variant="subtle"
+                    :options="item?.option ?? []" :placeholder="item.placeholder" :disabled="item.disabled" />
             </div>
             <div class="flex items-center gap-2">
-                <Filter/>
+                <Filter />
                 <div class="flex">
                     <Button size="md" :icon="'align-left'" class="rounded-l-md border rounded-r-none"></Button>
                     <Dropdown placement="left" class="bg-gray-50 rounded-r-sm rounded-l-none" :options="dropdown" :button="{
@@ -32,10 +33,10 @@
 </template>
 
 <script setup>
-import { FormControl, List, Dropdown } from 'frappe-ui'
-import {ref} from 'vue'
-import Loader from '@/component/Loader.vue' 
-import Filter from '@/component/Filter.vue' 
+import { FormControl, List, Dropdown, createResource } from 'frappe-ui'
+import { ref, watch } from 'vue'
+import Loader from '@/component/Loader.vue'
+import Filter from '@/component/Filter.vue'
 
 const props = defineProps({
     doctype: {
@@ -54,10 +55,6 @@ const props = defineProps({
         type: Object,
         required: false,
     },
-    isloading: {
-        type: Boolean,
-        required: true
-    }
 })
 let table = {
     columns: [
@@ -95,7 +92,43 @@ const handleButtonClick = () => {
     // console.log(e)
 }
 const formData = ref({
-  id: '' 
+    id: ''
 })
-console.log(formData)
+let isloading = ref(false);
+// let docoment = createResource({
+//     url: "sva_report.controllers.get_report_data.execute",
+//     params: {
+//         doc: props.doctype,
+//     },
+//     auto: true,
+//     onSuccess(data) {
+//         setTimeout(() => {
+//             isloading = false
+//         }, 1000)
+//     },
+// });
+// watch(() => props.doctype, async (newValue, oldValue) => {
+//     if (newValue !== oldValue) {
+//         docoment = createResource({
+//             url: "sva_report.controllers.get_report_data.execute",
+//             params: {
+//                 doc: newValue,
+//             },
+//             auto: true,
+//             onSuccess(data) {
+//                 setTimeout(() => {
+//                     isloading = false
+//                 }, 1000)
+//             },
+//             onError(error) {
+//                 if (error) {
+//                     setTimeout(() => {
+//                         isloading = false
+//                     }, 1000)
+//                 }
+//             },
+//         });
+//     }
+// });
+
 </script>

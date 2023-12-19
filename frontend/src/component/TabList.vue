@@ -1,8 +1,8 @@
 <template>
   <div class="w-full h-full pt-2">
-    <TabButtons v-model="selectedTab" :buttons="tabs" :onTabChanged="active" />
+    <TabButtons class="overflow-x-auto" v-model="selectedTab" :buttons="tabs" />
     <div class="pt-3 h-full">
-      <ListViewTable :doctype="selectedTab" :filters="filters" :isloading="isloading" />
+      <ListViewTable :doctype="selectedTab" :filters="filters" />
     </div>
   </div>
 </template> 
@@ -25,10 +25,7 @@ const props = defineProps({
     required: true,
   },
 });
-const selectedTab = ref(props.tabs[0]?.value);
-let isloading = ref(false);
-const active = () => {
-  isloading.value = true
-}
+const selectedTab = ref(props.tabs[0]?.label);
+
 </script>
  

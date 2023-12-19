@@ -1,36 +1,45 @@
 <template>
-    <div class="relative" ref="filterContainer">
-        <Button :icon="'filter'" @click="openFilter" label="Filter"
-            class="bg-gray-100 rounded-md px-2 py-0.5 text-gray-500"></Button>
-        <div v-if="isOpenFilter"
-            class="max-w-lg w-[500px] px-3 pt-3 right-0 absolute top-9 rounded-md bg-white border-2 shadow-sm">
-            <div class="flex flex-col gap-2">
-                <div  v-for="(filter, index) in filterFields" :key="index" class="flex gap-2 items-center">
-                    <Input v-model="filter.field1" class="flex-1" />
-                    <Input v-model="filter.field2" class="flex-1" />
-                    <Input v-model="filter.field3" class="flex-1" />
-                    <Button @click="removeFilterField(index)" :icon="'x'" 
-                        class="bg-transparent hover:bg-transparent"></Button>
-                </div>
-                <div class="flex py-2 border-t items-center justify-between">
-                    <div>
-                        <Button @click="addFilterField" class="bg-white hover:bg-transparent">Add a Filter</Button>
+    <Popover>
+        <template #target="{ togglePopover }">
+            <button @click="togglePopover()" class="bg-gray-100 rounded-l-md border rounded-r-none text-gray-600 flex items-center gap-1 px-3 py-0.5 rounded-md">
+                Filter
+                <p v-if="filterCount > 0" class="text-sm">{{ filterCount }}</p>
+            </button>
+            <Button @click="clearFilters" :icon="'x'" class="rounded-r-md rounded-l-none py-4"></Button>
+        </template>
+        <template #body-main>
+            <div class="p-2 max-w-lg w-auto md:w-[500px]">
+                <div class="flex flex-col gap-2">
+                    <div v-for="(filter, index) in filterFields" :key="index" class="flex flex-col md:flex-row gap-2 items-center">
+                        <Input v-model="filter.field1" class="flex-1" />
+                        <Input v-model="filter.field2" class="flex-1" />
+                        <Input v-model="filter.field3" class="flex-1" />
+                        <Button @click="removeFilterField(index)" :icon="'x'"
+                            class="bg-transparent hover:bg-transparent"></Button>
                     </div>
-                    <div class="flex gap-2">
-                        <Button @click="clearFilters">Clear Filters</Button>
-                        <Button @click="applyFilters" variant="solid">Apply Filters</Button>
+                    <div class="flex py-2 border-t items-center justify-between">
+                        <div>
+                            <Button @click="addFilterField" class="bg-white hover:bg-transparent">Add a Filter</Button>
+                        </div>
+                        <div class="flex gap-2">
+                            <Button @click="clearFilters">Clear Filters</Button>
+                            <Button @click="applyFilters" variant="solid">Apply Filters</Button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+        </template>
+    </Popover>
 </template>
-  
+<script setup>
+import { Popover } from 'frappe-ui'
+</script>
 <script>
 export default {
     data() {
         return {
             isOpenFilter: false,
+            filterCount: 0,
             filterFields: [{ key: 1, field1: '', field2: '', field3: '' }]
         };
     },
@@ -48,26 +57,20 @@ export default {
                 filter.field2 = '';
                 filter.field3 = '';
             });
+            this.filterCount = 0
         },
         applyFilters() {
-            console.log('Filters applied:', this.filterFields);
-        },
-        openFilter() {
-            this.isOpenFilter = !this.isOpenFilter;
-
-        },
-        closeFilter(event) {
-            if (!this.$refs?.filterContainer?.contains(event?.target)) {
-                this.isOpenFilter = false;
+            const allFieldsFilled = this.filterFields.every(filter => {
+                return filter.field1 !== '' && filter.field2 !== '' && filter.field3 !== '';
+            });
+            if (allFieldsFilled) {
+                console.log('Filters applied:', this.filterFields);
+                this.filterCount = this.filterFields.length;
+            } else {
+                console.log('Please fill all fields in each filter before applying filters.');
             }
         },
     },
-    beforeDestroy() {
-        window.removeEventListener('click', this.closeFilter);
-    },
-    mounted(){
-        window.addEventListener('click', this.closeFilter);
-    }
 
 };
 </script>
