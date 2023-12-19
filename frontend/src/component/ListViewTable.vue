@@ -11,23 +11,24 @@
                 <Filter />
                 <div class="flex">
                     <Button size="md" :icon="'align-left'" class="rounded-l-md border rounded-r-none"></Button>
-                    <Dropdown placement="left" class="bg-gray-50 rounded-r-sm rounded-l-none" :options="dropdown" :button="{
+                    <Dropdown placement="left" class="bg-gray-50 truncate rounded-r-sm rounded-l-none" :options="dropdown" :button="{
                         label: 'Last Updated On',
                     }" />
                 </div>
             </div>
         </div>
-        <div class="w-full h-full overflow-y-scroll">
+        <div class="w-full h-full overflow-y-auto">
             <Loader v-if="isloading" />
             <List v-else class="h-[250px]" :columns="table.columns" :rows="table.rows" />
         </div>
-        <div class="w-full h-16 sticky bottom-0 border-t flex items-center px-4">
+        <div class="w-full h-16 sticky bottom-0 border-t flex justify-between items-center px-4">
             <div class="flex">
                 <Button size="md" @click="handleButtonClick(10)" class="rounded-l-sm border rounded-r-none">10</Button>
                 <Button size="md" @click="handleButtonClick(50)" class="bg-gray-50 rounded-none">50</Button>
                 <Button size="md" @click="handleButtonClick(500)"
                     class="bg-gray-50 rounded-r-sm rounded-l-none">500</Button>
             </div>
+            <Pagination />
         </div>
     </div>
 </template>
@@ -37,6 +38,7 @@ import { FormControl, List, Dropdown, createResource } from 'frappe-ui'
 import { ref, watch } from 'vue'
 import Loader from '@/component/Loader.vue'
 import Filter from '@/component/Filter.vue'
+import Pagination from '@/component/Pagination.vue'
 
 const props = defineProps({
     doctype: {
@@ -88,8 +90,8 @@ let dropdown = [
         },
     },
 ]
-const handleButtonClick = () => {
-    // console.log(e)
+const handleButtonClick = (e) => {
+    console.log(e)
 }
 const formData = ref({
     id: ''
