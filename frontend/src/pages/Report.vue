@@ -1,24 +1,23 @@
 <template>
     <div class="w-full h-screen p-12">
-        <TabList />
-        <ListViewTable 
-        :doctype="'user'"
-        :filters="filters"
-        />
-        
+        <div class="w-full h-12 bg-gray-50 fixed top-0 left-0"></div>
+        <TabList :tabs="tabs"  />
     </div>
 </template>
   
 <script setup>
+import TabList from '@/component/TabList.vue'
 
- import TabList from '@/component/TabList.vue'
- import ListViewTable from '@/component/ListViewTable.vue'
- let filters = [
+let tabs = [
     {
-        type:'text',
-        placeholder:'ID',
-        disabled:false
+        label: 'Beneficiary',
+        value:'beneficiary'
+    },
+    {
+        label: 'User',
+        value:'user'
     }
- ]
+]
+
 </script>
   
