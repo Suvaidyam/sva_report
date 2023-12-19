@@ -97,40 +97,40 @@ const formData = ref({
     id: ''
 })
 let isloading = ref(false);
-// let docoment = createResource({
-//     url: "sva_report.controllers.get_report_data.execute",
-//     params: {
-//         doc: props.doctype,
-//     },
-//     auto: true,
-//     onSuccess(data) {
-//         setTimeout(() => {
-//             isloading = false
-//         }, 1000)
-//     },
-// });
-// watch(() => props.doctype, async (newValue, oldValue) => {
-//     if (newValue !== oldValue) {
-//         docoment = createResource({
-//             url: "sva_report.controllers.get_report_data.execute",
-//             params: {
-//                 doc: newValue,
-//             },
-//             auto: true,
-//             onSuccess(data) {
-//                 setTimeout(() => {
-//                     isloading = false
-//                 }, 1000)
-//             },
-//             onError(error) {
-//                 if (error) {
-//                     setTimeout(() => {
-//                         isloading = false
-//                     }, 1000)
-//                 }
-//             },
-//         });
-//     }
-// });
+let docoment = createResource({
+    url: "sva_report.controllers.get_report_data.execute",
+    params: {
+        doc: props.doctype,
+    },
+    auto: true,
+    onSuccess(data) {
+        setTimeout(() => {
+            isloading = false
+        }, 1000)
+    },
+});
+watch(() => props.doctype, async (newValue, oldValue) => {
+    if (newValue !== oldValue) {
+        docoment = createResource({
+            url: "sva_report.controllers.get_report_data.execute",
+            params: {
+                doc: newValue,
+            },
+            auto: true,
+            onSuccess(data) {
+                setTimeout(() => {
+                    isloading = false
+                }, 1000)
+            },
+            onError(error) {
+                if (error) {
+                    setTimeout(() => {
+                        isloading = false
+                    }, 1000)
+                }
+            },
+        });
+    }
+});
 
 </script>

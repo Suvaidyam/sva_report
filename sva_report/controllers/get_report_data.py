@@ -7,7 +7,7 @@ from sva_report.utils.filter import Filter
 allowed_types = ['Data', 'Int', 'Select', 'Check']
 child_types = ['Table', 'Table MultiSelect']
 
-def get_fields(doc_type,fields,parent_field="", degree=1,link_table=None, child_table=None):
+def get_fields(doc_type,fields,parent_field="", degree=1,link_table=None, child_table=None,child_degree=1):
     if parent_field:
         parent_field = f"{parent_field}."
     ref_doc_meta = frappe.get_meta(doc_type)
@@ -32,7 +32,10 @@ def get_fields(doc_type,fields,parent_field="", degree=1,link_table=None, child_
 
         elif field.fieldtype in child_types:
             local_field['parenttype'] = doc_type
-            get_fields(field.options,fields,field.fieldname,1,child_table=local_field)
+            if child_degree < 3:
+                i = child_degree+1
+                print(i,child_degree)
+                get_fields(doc_type=field.options,fields=fields,parent_field=field.fieldname,degree=1,link_table=None,child_table=local_field,child_degree=i)
 
     return fields
 
@@ -41,9 +44,11 @@ def get_fields(doc_type,fields,parent_field="", degree=1,link_table=None, child_
 @frappe.whitelist()
 
 def execute(doc,filters=None):
+    # return doc
     doc_name = doc
     report_doc = frappe.get_doc('Report', doc_name)
     fields = get_fields(report_doc.ref_doctype,[], parent_field="")
+    return fields
     base_tbl = f"`tab{doc_name}`"
     joins = []
     unique_link_table = []
@@ -91,7 +96,7 @@ def execute(doc,filters=None):
             {base_tbl}
         {join_str}
     """
-    results = frappe.db.sql(query, as_dict=True)
+    # results = frappe.db.sql(query, as_dict=True)
 
     res = {
         'columns':[{
@@ -100,6 +105,6 @@ def execute(doc,filters=None):
         "fieldtype":field.get('fieldtype'),
         "options":field.get('options')
         } for field in fields],
-        'data':results
+        'data':query
     }
     return res
