@@ -67,12 +67,7 @@ def execute(doc,filters=None,skip=0, limit=10,debug=None):
     doc_name = doc
     report_doc = frappe.get_doc('Report', doc_name)
     report_fields = [column.fieldname for column in report_doc.columns]
-    # print(report_fields)
     all_fields = get_fields(report_doc.ref_doctype,[], parent_field="")
-    # return {
-    #     'all_fields':all_fields,
-    #     'report_fields':report_fields
-    # }
     fields = []
     for column in report_fields:
         for field in all_fields:
@@ -136,6 +131,15 @@ def execute(doc,filters=None,skip=0, limit=10,debug=None):
     results = frappe.db.sql(data_query, as_dict=True)
 
     res = {
+        'filters':[
+            {
+                "label":field.get('label'),
+                "name":field.get('label'),
+                "fieldname":field.get('label'),
+                "fieldtype":field.get('fieldtype'),
+                "options":field.get('options')
+            } for field in report_doc.filters
+        ],
         'columns':[{
         "label":field.get('label'),
         "name":field.get('label'),

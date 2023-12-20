@@ -5,9 +5,9 @@
 
         <div
             class="w-full sticky top-0 md:h-14 border-b flex flex-col md:flex-row py-1 justify-between items-center px-4 gap-2">
-            <div class="" v-for="item in filters">
-                <FormControl v-model="formData.id" :type="item.type" :name="item.name" size="sm" variant="subtle"
-                    :options="item?.option ?? []" :placeholder="item.placeholder" :disabled="item.disabled" />
+            <div class="" v-for="item in resource?.data?.filters">
+                <FormControl v-model="formData[item.fieldname]" :type="item.fieldtype" :name="item.fieldname" size="sm"
+                    variant="subtle" :options="item?.options ?? ''" :placeholder="item.label" />
             </div>
             <div class="flex items-center gap-2">
                 <Filter />
