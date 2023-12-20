@@ -4,10 +4,19 @@
 import frappe
 from sva_report.utils.filter import Filter
 
-allowed_types = ['Data', 'Int', 'Select', 'Check']
+allowed_types = ['Data', 'Int', 'Select', 'Check', 'Phone']
 child_types = ['Table', 'Table MultiSelect']
 
-def get_fields(doc_type,fields,parent_field="", degree=1,link_table=None, child_table=None,child_degree=1):
+def get_fields(
+        doc_type,
+        fields,
+        parent_field="",
+        degree=1,
+        link_table=None,
+        child_table=None,
+        child_degree=1
+    ):
+    # print("child_degree",child_degree)
     if parent_field:
         parent_field = f"{parent_field}."
     ref_doc_meta = frappe.get_meta(doc_type)
@@ -28,27 +37,48 @@ def get_fields(doc_type,fields,parent_field="", degree=1,link_table=None, child_
                 new_parent_field = field.fieldname
                 if parent_field:
                     new_parent_field = f"{parent_field}{field.fieldname}"
-                link_fields = get_fields(field.options,fields, new_parent_field, 2, local_field, child_table)
-
+                link_fields = get_fields(
+                    doc_type=field.options,
+                    fields=fields,
+                    parent_field=new_parent_field,
+                    degree=2,
+                    link_table=local_field,
+                    child_table=child_table,
+                    child_degree=2
+                )
         elif field.fieldtype in child_types:
             local_field['parenttype'] = doc_type
-            if child_degree < 3:
-                i = child_degree+1
-                print(i,child_degree)
-                get_fields(doc_type=field.options,fields=fields,parent_field=field.fieldname,degree=1,link_table=None,child_table=local_field,child_degree=i)
+            if child_degree == 1:
+                # print(child_degree,field.fieldtype,doc_type,field.options)
+                get_fields(
+                    doc_type=field.options,
+                    fields=fields,
+                    parent_field=field.fieldname,
+                    degree=1,
+                    link_table=None,
+                    child_table=local_field,
+                    child_degree=2
+                )
 
     return fields
-
-# print(results)
 
 @frappe.whitelist()
-
-def execute(doc,filters=None):
-    # return doc
+def execute(doc,filters=None,skip=0, limit=10,debug=None):
     doc_name = doc
     report_doc = frappe.get_doc('Report', doc_name)
-    fields = get_fields(report_doc.ref_doctype,[], parent_field="")
-    return fields
+    report_fields = [column.fieldname for column in report_doc.columns]
+    # print(report_fields)
+    all_fields = get_fields(report_doc.ref_doctype,[], parent_field="")
+    # return {
+    #     'all_fields':all_fields,
+    #     'report_fields':report_fields
+    # }
+    fields = []
+    for column in report_fields:
+        for field in all_fields:
+            if field.get('fieldname') == column:
+                fields.append(field)
+
     base_tbl = f"`tab{doc_name}`"
     joins = []
     unique_link_table = []
@@ -89,22 +119,32 @@ def execute(doc,filters=None):
         elif len(field.get('fieldname').split('.')) == 1:
             columns.append(f"{base_tbl}.{field.get('fieldname')} as `{field.get('label')}`")
     columns_str = ',\n'.join(columns)
-    query = f"""
+    count=None
+    if skip == 0:
+        count_query = f"select count(*) as count from {base_tbl}"
+        count_result = frappe.db.sql(count_query, as_dict=True)
+        if len(count_result)>0:
+            count = count_result[0].get('count', None)
+    data_query = f"""
         select
             {columns_str}
         from
             {base_tbl}
         {join_str}
-    """
-    # results = frappe.db.sql(query, as_dict=True)
+        LIMIT {limit} OFFSET {skip}
+        """
+    results = frappe.db.sql(data_query, as_dict=True)
 
     res = {
         'columns':[{
         "label":field.get('label'),
+        "name":field.get('label'),
         "fieldname":field.get('label'),
         "fieldtype":field.get('fieldtype'),
         "options":field.get('options')
         } for field in fields],
-        'data':query
+        'query': query if debug is not None else None,
+        'data':results,
+        'total_records':count
     }
     return res
