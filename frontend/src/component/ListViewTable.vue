@@ -25,19 +25,27 @@
             <List v-else class="h-[250px]" :columns="resource?.data?.columns" :rows="resource?.data?.data" />
         </div>
         <div class="w-full h-16 sticky bottom-0 border-t flex justify-between items-center px-4">
-            <div class="flex">
-                <Button size="md" @click="handleButtonClick(10)" class="rounded-l-sm border rounded-r-none">10</Button>
-                <Button size="md" @click="handleButtonClick(50)" class="bg-gray-50 rounded-none">50</Button>
+            <div class="flex w-44">
+                <Button size="md" @click="handleButtonClick(10)"
+                    :class="page_limit == 10 ? 'border rounded-r-none bg-gray-100' : 'bg-gray-50 rounded-r-none'">10</Button>
+                <Button size="md" @click="handleButtonClick(50)"
+                    :class="page_limit == 50 ? 'border rounded-l-none rounded-r-none bg-gray-100' : 'bg-gray-50 rounded-l-none rounded-r-none'">50</Button>
                 <Button size="md" @click="handleButtonClick(500)"
-                    class="bg-gray-50 rounded-r-sm rounded-l-none">500</Button>
+                    :class="page_limit == 500 ? 'border rounded-l-none bg-gray-100' : 'bg-gray-50 rounded-l-none'">500</Button>
             </div>
-            <Pagination />
+            <div>
+                <Pagination 
+                :getCurrentPage="getCurrentPage" 
+                :totalCount="resource?.data?.total_records"
+                :perPageData="page_limit"
+                :currentPage="currentPage"/>
+            </div>
         </div>
     </div>
 </template>
 
 <script setup>
-import { FormControl, List, Dropdown, createResource, resourcesPlugin } from 'frappe-ui'
+import { FormControl, List, Dropdown, createResource } from 'frappe-ui'
 import { ref, watch } from 'vue'
 import Loader from '@/component/Loader.vue'
 import Filter from '@/component/Filter.vue'
@@ -61,10 +69,6 @@ const props = defineProps({
         required: false,
     },
 })
-const table = ref({
-    columns: [],
-    rows: []
-})
 let dropdown = [
     {
         label: 'Edit Title',
@@ -82,24 +86,36 @@ let dropdown = [
         },
     },
 ]
-const handleButtonClick = (e) => {
-    console.log(e)
-}
+
 const formData = ref({
-    id: ''
 })
+let page_limit = ref(10);
 let isloading = ref(false);
-let docParams = props.doctype
-const resource = createResource({
+let currentPage = ref(1);
+
+const handleButtonClick = (e) => {
+    page_limit.value = e
+}
+const getCurrentPage = (page) => {
+    currentPage.value = page
+}
+
+let resource = createResource({
     url: "sva_report.controllers.get_report_data.execute",
     params: {
-        doc: docParams,
+        doc: props.doctype,
     },
     auto: true
 });
 watch(() => props.doctype, async (newValue, oldValue) => {
     if (newValue !== oldValue) {
-        docParams = newValue
+        resource = createResource({
+            url: "sva_report.controllers.get_report_data.execute",
+            params: {
+                doc: newValue,
+            },
+            auto: true
+        });
     }
 });
 

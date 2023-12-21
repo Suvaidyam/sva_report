@@ -1,11 +1,11 @@
 <template>
     <Popover>
         <template #target="{ togglePopover }">
-            <button @click="togglePopover()" class="bg-gray-100 rounded-l-md border rounded-r-none text-gray-600 flex items-center gap-1 px-3 py-0.5 rounded-md">
+            <button @click="togglePopover()" class="bg-gray-100 border rounded-r-none rounded-l-md text-gray-600 flex items-center gap-1 px-3 py-0.5 ">
                 Filter
                 <p v-if="filterCount > 0" class="text-sm">{{ filterCount }}</p>
             </button>
-            <Button @click="clearFilters" :icon="'x'" class="rounded-r-md rounded-l-none py-4"></Button>
+            <Button @click="clearFilters" :icon="'x'" class=" rounded-l-none py-4"></Button>
         </template>
         <template #body-main>
             <div class="p-2 max-w-lg w-auto md:w-[500px]">

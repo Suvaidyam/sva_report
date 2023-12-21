@@ -1,2 +1,17 @@
 @import './assets/Inter/inter.css';
 @import 'frappe-ui/src/style.css';
+
+button{
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+::-webkit-scrollbar {
+   display: none;
+  }
+#headlessui-radiogroup-1{
+    background-color: #F3F3F3;
+    border-radius: 10px;
+}
+.order-first{
+   display: none;
+}
