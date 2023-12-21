@@ -3,25 +3,21 @@ import { session } from './data/session'
 import { userResource } from '@/data/user'
 
 const routes = [
+  
   {
+    name: 'Report',
     path: '/',
-    name: 'Home',
-    component: () => import('@/pages/Home.vue'),
+    component: () => import('@/pages/Report.vue'),
   },
   {
     name: 'Login',
     path: '/login',
     component: () => import('@/pages/Login.vue'),
   },
-  {
-    name: 'Report',
-    path: '/report',
-    component: () => import('@/pages/Report.vue'),
-  },
 ]
 
 let router = createRouter({
-  history: createWebHistory('/frontend'),
+  history: createWebHistory('/report'),
   routes,
 })
 

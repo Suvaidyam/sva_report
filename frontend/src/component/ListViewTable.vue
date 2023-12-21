@@ -1,33 +1,46 @@
 <template>
     <div class="w-full mx-auto border h-full relative rounded-md flex flex-col">
-        <div
-            class="w-full sticky top-0 md:h-14 border-b flex flex-col md:flex-row py-1 justify-between items-center px-4 gap-2">
-            <p></p>
+        <div class="w-full sticky top-0 md:h-14 border-b flex flex-col md:flex-row py-1
+             justify-end items-center px-4 gap-2">
             <div class="flex items-center gap-2">
-                <Filter :filterCount="filterCount" :filterFields="filterFields" :applyFilters="applyFilters"
-                    :clearFilters="clearFilters" :fields="resource?.data?.columns" />
+                <Filter 
+                    :filterCount="filterCount" 
+                    :filterFields="filterFields" 
+                    :applyFilters="applyFilters"
+                    :clearFilters="clearFilters" 
+                    :fields="resource?.data?.columns ?? []" />
                 <div class="flex">
-                    <Button size="md" :icon="'align-left'" class="rounded-l-md border rounded-r-none"></Button>
-                    <Autocomplete :options="dropdown" class="flex-1" />
+                    <Button size="md" :icon="'align-left'" 
+                        class="rounded-l-md border rounded-r-none"></Button>
+                    <Autocomplete size="md" :options="dropdown" v-model="shorValue" 
+                      class="rounded-r-md border rounded-l-none bg-gray-100 py-[1px]" />
                 </div>
             </div>
         </div>
         <div class="w-full h-full overflow-y-auto">
             <Loader v-if="isloading" />
-            <List v-else class="h-[250px]" :columns="resource?.data?.columns" :rows="resource?.data?.data" />
+            <List v-else  
+                :columns="resource?.data?.columns" 
+                :rows="resource?.data?.data" />
         </div>
         <div class="w-full h-16 sticky bottom-0 border-t flex justify-between items-center px-4">
             <div class="flex w-44">
                 <Button size="md" @click="handleButtonClick(10)"
-                    :class="page_limit == 10 ? 'border rounded-r-none bg-gray-100' : 'bg-gray-50 rounded-r-none'">10</Button>
+                    :class="page_limit == 10 ? 'border rounded-r-none bg-gray-100' 
+                    : 'bg-gray-50 rounded-r-none'">10</Button>
                 <Button size="md" @click="handleButtonClick(50)"
-                    :class="page_limit == 50 ? 'border rounded-l-none rounded-r-none bg-gray-100' : 'bg-gray-50 rounded-l-none rounded-r-none'">50</Button>
+                    :class="page_limit == 50 ? 'border rounded-l-none rounded-r-none bg-gray-100' 
+                    : 'bg-gray-50 rounded-l-none rounded-r-none'">50</Button>
                 <Button size="md" @click="handleButtonClick(500)"
-                    :class="page_limit == 500 ? 'border rounded-l-none bg-gray-100' : 'bg-gray-50 rounded-l-none'">500</Button>
+                    :class="page_limit == 500 ? 'border rounded-l-none bg-gray-100' 
+                    : 'bg-gray-50 rounded-l-none'">500</Button>
             </div>
             <div>
-                <Pagination :getCurrentPage="getCurrentPage" :totalCount="resource?.data?.total_records"
-                    :perPageData="page_limit" :currentPage="currentPage" />
+                <Pagination 
+                    :getCurrentPage="getCurrentPage" 
+                    :totalCount="resource?.data?.total_records"
+                    :perPageData="page_limit" 
+                    :currentPage="currentPage" />
             </div>
         </div>
     </div>
@@ -60,6 +73,7 @@ const props = defineProps({
 })
 // ref value
 let page_limit = ref(10);
+let shorValue = ref('Last Updated On');
 let isloading = ref(false);
 let currentPage = ref(1);
 const filterCount = ref(0);
@@ -71,8 +85,10 @@ const handleButtonClick = (e) => {
 // pagination
 const getCurrentPage = (page) => {
     currentPage.value = page
+    console.log(page)
 }
 // api call
+isloading.value=true
 let resource = createResource({
     url: "sva_report.controllers.get_report_data.execute",
     params: {
@@ -80,18 +96,29 @@ let resource = createResource({
         skip: (currentPage.value - 1) * page_limit.value,
         limit: page_limit.value,
     },
-    auto: true
+    auto: true,
+    onSuccess() {
+        setTimeout(()=>{
+        isloading.value=false
+        },1000)
+    },
 });
-watch([() => props.doctype, () => page_limit.value], async ([newDoctype, newPageLimit], [oldDoctype, oldPageLimit]) => {
-    if (newDoctype !== oldDoctype || newPageLimit !== oldPageLimit) {
+watch([() => props.doctype, () => page_limit.value,() =>currentPage.value], async ([newDoctype, newPageLimit,newCurrentPage], [oldDoctype, oldPageLimit,oldCurrentPage]) => {
+    if (newDoctype !== oldDoctype || newPageLimit !== oldPageLimit || newCurrentPage !== oldCurrentPage) {
+        isloading.value=true
         resource = createResource({
             url: "sva_report.controllers.get_report_data.execute",
             params: {
                 doc: newDoctype,
-                skip: (currentPage.value - 1) * newPageLimit,
+                skip: (newCurrentPage - 1) * newPageLimit,
                 limit: newPageLimit,
             },
-            auto: true
+            auto: true,
+            onSuccess() {
+               setTimeout(()=>{
+                isloading.value=false
+               },1000)
+		    },
         });
     }
 });
@@ -102,6 +129,7 @@ const applyFilters = () => {
         return filter.field1 !== '' && filter.field2 !== '' && filter.field3 !== '';
     });
     if (allFieldsFilled) {
+        isloading.value=true
         let isFilter = filterFields.value.map(item => [item.field1, item.field2, item.field3]);
        resource = createResource({
             url: "sva_report.controllers.get_report_data.execute",
@@ -111,7 +139,12 @@ const applyFilters = () => {
                 skip: (currentPage.value - 1) * page_limit.value,
                 limit: page_limit.value,
             },
-            auto: true
+            auto: true,
+            onSuccess() {
+               setTimeout(()=>{
+                isloading.value=false
+               },1000)
+		    },
         });
         filterCount.value = filterFields.value.length;
     } else {
@@ -131,18 +164,23 @@ const clearFilters = () => {
 
 let dropdown = [
     {
-        label: 'Edit Title',
-        value: 'Edit Title',
+        label: 'Last Updated On',
+        value: 'Last Updated On',
 
     },
     {
-        label: 'Manage Members',
-        value: 'Manage Members',
+        label: 'Created On',
+        value: 'Created On',
 
     },
     {
-        label: 'Delete this project',
-        value: 'Delete this project',
+        label: 'ID',
+        value: 'ID',
+
+    },
+    {
+        label: 'Most Used',
+        value: 'Most Used',
 
     },
 ]
