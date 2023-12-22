@@ -73,7 +73,8 @@ def execute(doc,filters=None,skip=0, limit=10,debug=None):
         for field in all_fields:
             if field.get('fieldname') == column:
                 fields.append(field)
-
+    if len(report_fields) == 0:
+        fields = all_fields
     base_tbl = f"`tab{doc_name}`"
     joins = []
     unique_link_table = []
