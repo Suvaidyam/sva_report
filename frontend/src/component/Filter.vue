@@ -1,5 +1,5 @@
 <template>
-    <Popover>
+    <Popover >
         <template #target="{ togglePopover }">
             <button @click="togglePopover()"
                 class="bg-gray-100 border rounded-r-none rounded-l-md text-gray-600 flex items-center gap-1 px-3 py-0.5 ">
@@ -13,12 +13,13 @@
                 <div class="flex flex-col gap-2">
                     <div v-for="(filter, index) in filterFields" :key="index"
                         class="flex flex-col md:flex-row gap-2 items-center">
-                        <Select v-if="fields?.length > 0" :options="fields.map(tab => {
-                            return { label: tab.label, value: tab.fieldtype };
-                        })" v-model="filter.field1" class="flex-1" />
-                        <Select :options="newSelectedValues[index]?.options" v-model="filter.field2" class="flex-1" />
-                        <FormControl :type="newSelectedValues[index]?.options[0]?.type?.toLowerCase()" size="sm" variant="subtle"
-                         v-model="filter.field3" :options="newSelectedValues[index]?.options"  class="flex-1"/>
+                        <Select v-if="fields?.columns?.length > 0" :options="fields?.columns?.map(tab => {
+                            return { label: tab.label, value: JSON?.stringify({ type: tab?.fieldtype, value: tab?.fieldname }) };
+                        })" v-model="filter.field1" class="md:flex-1 w-full md:w-auto " />
+                        <Select :options="newSelectedValues[index]?.options" v-model="filter.field2" class="md:flex-1 w-full md:w-auto " />
+                        <!-- newSelectedValues[index]?.options[0]?.type?.toLowerCase() -->
+                        <FormControl :type="'select'" size="sm" variant="subtle" v-model="filter.field3"
+                            :options="newSelectedValues[index]?.options2" class="md:flex-1 w-full md:w-auto " /> 
                         <Button @click="removeFilterField(index)" :icon="'x'"
                             class="bg-transparent hover:bg-transparent"></Button>
                     </div>
@@ -58,7 +59,7 @@ const props = defineProps({
         required: true,
     },
     fields: {
-        type: Array,
+        type: Object,
         required: true,
     },
 })
@@ -101,15 +102,24 @@ let dataType = ref([
 ])
 let newSelectedValues = ref([])
 watch(() => props.filterFields, (newFilterFields, oldFilterFields) => {
-        newSelectedValues.value = newFilterFields.map(filter => {
-        return{
-            ...filter,options:dataType.value.filter(item => item.type === filter.field1)
+    newSelectedValues.value = newFilterFields.map(filter => {
+        if (filter.field1) {
+            try {
+                return {
+                    ...filter,
+                    options: dataType.value.filter(item => item.type === JSON.parse(filter.field1).type),
+                    options2:props.fields.data.map(item => ({ label: item[JSON.parse(filter.field1 ?? "{}")?.value], value: item[JSON.parse(filter.field1 ?? "{}")?.value] }))
+                };
+            } catch (error) {
+                console.error('Error parsing JSON:', error);
+            }
         }
+        return { ...filter, options: [] };
     });
 }, { deep: true });
 const addFilterField = () => {
     const newKey = props.filterFields.length + 1;
-    props.filterFields.push({ key: newKey, field1: '', field2: '', field3: '',options:[] });
+    props.filterFields.push({ key: newKey, field1: '', field2: '', field3: '', options: [],options2: [] });
 };
 
 const removeFilterField = (index) => {

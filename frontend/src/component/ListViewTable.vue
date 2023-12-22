@@ -8,11 +8,11 @@
                     :filterFields="filterFields" 
                     :applyFilters="applyFilters"
                     :clearFilters="clearFilters" 
-                    :fields="resource?.data?.columns ?? []" />
+                    :fields="resource?.data ?? {}" />
                 <div class="flex">
                     <Button size="md" :icon="'align-left'" 
                         class="rounded-l-md border rounded-r-none"></Button>
-                    <Autocomplete size="md" :options="dropdown" v-model="shorValue" 
+                    <Autocomplete size="md" :options="resource?.data?.columns" v-model="sortValue" 
                       class="rounded-r-md border rounded-l-none bg-gray-100 py-[1px]" />
                 </div>
             </div>
@@ -73,7 +73,7 @@ const props = defineProps({
 })
 // ref value
 let page_limit = ref(10);
-let shorValue = ref('Last Updated On');
+let sortValue = ref('Name');
 let isloading = ref(false);
 let currentPage = ref(1);
 const filterCount = ref(0);
@@ -93,6 +93,7 @@ let resource = createResource({
     url: "sva_report.controllers.get_report_data.execute",
     params: {
         doc: props.doctype,
+        sort: sortValue.value,
         skip: (currentPage.value - 1) * page_limit.value,
         limit: page_limit.value,
     },
@@ -103,13 +104,15 @@ let resource = createResource({
         },1000)
     },
 });
-watch([() => props.doctype, () => page_limit.value,() =>currentPage.value], async ([newDoctype, newPageLimit,newCurrentPage], [oldDoctype, oldPageLimit,oldCurrentPage]) => {
-    if (newDoctype !== oldDoctype || newPageLimit !== oldPageLimit || newCurrentPage !== oldCurrentPage) {
-        isloading.value=true
+watch([() => props.doctype, () => page_limit.value,() =>currentPage.value,()=>sortValue.value], 
+    async ([newDoctype, newPageLimit,newCurrentPage,newSort], [oldDoctype, oldPageLimit,oldCurrentPage,oldSort]) => {
+    if (newDoctype !== oldDoctype || newPageLimit !== oldPageLimit || newCurrentPage !== oldCurrentPage || newSort !==oldSort) {
+        isloading.value=true 
         resource = createResource({
             url: "sva_report.controllers.get_report_data.execute",
             params: {
                 doc: newDoctype,
+                sort: newSort.name,
                 skip: (newCurrentPage - 1) * newPageLimit,
                 limit: newPageLimit,
             },
@@ -130,7 +133,8 @@ const applyFilters = () => {
     });
     if (allFieldsFilled) {
         isloading.value=true
-        let isFilter = filterFields.value.map(item => [item.field1, item.field2, item.field3]);
+        let isFilter = filterFields.value.map(item => [JSON.parse(item.field1).value, item.field2, item.field3]);
+        console.log(filterFields.value)
        resource = createResource({
             url: "sva_report.controllers.get_report_data.execute",
             params: {
@@ -152,36 +156,33 @@ const applyFilters = () => {
     }
 };
 const clearFilters = () => {
-    filterFields.value.forEach((filter) => {
+    filterFields.value = [{ key: 1, field1: '', field2: '', field3: '', options: [],options2: [] }]
+    let isValue =  filterFields.value.forEach((filter) => {
         filter.field1 = '';
         filter.field2 = '';
         filter.field3 = '';
     });
-    filterFields.value = [{ key: 1, field1: '', field2: '', field3: '', options: [] }]
+    if(isValue){
+        isloading.value=true
+        resource = createResource({
+            url: "sva_report.controllers.get_report_data.execute",
+            params: {
+                doc: props.doctype,
+                filters:[],
+                skip: (currentPage.value - 1) * page_limit.value,
+                limit: page_limit.value,
+            },
+            auto: true,
+            onSuccess() {
+               setTimeout(()=>{
+                isloading.value=false
+               },1000)
+		    },
+        });
+    }
+   
     filterCount.value = 0;
 };
 // filter workin
 
-let dropdown = [
-    {
-        label: 'Last Updated On',
-        value: 'Last Updated On',
-
-    },
-    {
-        label: 'Created On',
-        value: 'Created On',
-
-    },
-    {
-        label: 'ID',
-        value: 'ID',
-
-    },
-    {
-        label: 'Most Used',
-        value: 'Most Used',
-
-    },
-]
 </script>
