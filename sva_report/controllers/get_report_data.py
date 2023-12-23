@@ -114,20 +114,39 @@ def execute(doc,filters=None,skip=0, limit=10,debug=None):
             columns.append(f"{field.get('fieldname')} as `{field.get('label')}`")
         elif len(field.get('fieldname').split('.')) == 1:
             columns.append(f"{base_tbl}.{field.get('fieldname')} as `{field.get('label')}`")
+
     columns_str = ',\n'.join(columns)
+    base_tbl_cond_list = []
+    if filters is not None:
+        for filter in filters:
+            if len(filter) == 3:
+                if len(filter[0].split('.')) == 1:
+                    base_tbl_cond_list.append(f"{filter[0]} {filter[1]} '{filter[2]}'")
+    base_tbl_cond_str = ""
+    if len(base_tbl_cond_list) > 0:
+        base_tbl_cond_str = f"WHERE {'AND'.join(base_tbl_cond_list)}"
+    # print("base_tbl_cond_str",base_tbl_cond_str)
+    with_query = f"""
+        WITH tmp_tble AS (
+            select
+                {columns_str}
+            from
+                (select * from {base_tbl} {base_tbl_cond_str} ) as {base_tbl}
+            {join_str}
+        )
+    """
     count=None
     if skip == 0:
-        count_query = f"select count(*) as count from {base_tbl}"
+        count_query = f"""
+            {with_query}
+            select count(*) as count from tmp_tble
+        """
         count_result = frappe.db.sql(count_query, as_dict=True)
         if len(count_result)>0:
             count = count_result[0].get('count', None)
     data_query = f"""
-        select
-            {columns_str}
-        from
-            {base_tbl}
-        {join_str}
-        LIMIT {limit} OFFSET {skip}
+        {with_query}
+        select * from tmp_tble LIMIT {limit} OFFSET {skip}
         """
     results = frappe.db.sql(data_query, as_dict=True)
 
@@ -136,7 +155,7 @@ def execute(doc,filters=None,skip=0, limit=10,debug=None):
             {
                 "label":field.get('label'),
                 "name":field.get('label'),
-                "fieldname":field.get('label'),
+                "fieldname":field.get('fieldname'),
                 "fieldtype":field.get('fieldtype'),
                 "options":field.get('options')
             } for field in report_doc.filters
@@ -144,7 +163,7 @@ def execute(doc,filters=None,skip=0, limit=10,debug=None):
         'columns':[{
         "label":field.get('label'),
         "name":field.get('label'),
-        "fieldname":field.get('label'),
+        "fieldname":field.get('fieldname'),
         "fieldtype":field.get('fieldtype'),
         "options":field.get('options')
         } for field in fields],
