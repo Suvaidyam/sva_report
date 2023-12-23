@@ -18,7 +18,9 @@
                         <Select :options="newSelectedValues[index]?.options" v-model="filterRow.field2"
                             class="md:flex-1 w-full md:w-auto " />
                         <!-- newSelectedValues[index]?.options[0]?.type?.toLowerCase() -->
-                        <FormControl :type="newSelectedValues[index]?.fieldtype" size="sm" variant="subtle"
+                        <Autocomplete v-if="newSelectedValues[index]?.fieldtype == 'link'" v-model="filterRow.field3"
+                            :options="newSelectedValues[index]?.options2" class="md:flex-1 w-full md:w-auto " />
+                        <FormControl v-else :type="newSelectedValues[index]?.fieldtype" size="sm" variant="subtle"
                             v-model="filterRow.field3" :options="newSelectedValues[index]?.options2"
                             class="md:flex-1 w-full md:w-auto " />
                         <Button @click="removeFilterField(index)" :icon="'x'"
@@ -105,7 +107,7 @@ watch(() => props.filterFields, async (newFilterFields, oldFilterFields) => {
                     return {
                         ...filter,
                         fieldname: _field.fieldname,
-                        fieldtype: (_field.fieldtype == 'Link' ? 'Select' : _field.fieldtype).toLowerCase(),
+                        fieldtype: (_field.fieldtype).toLowerCase(),
                         options: dataType[_field.fieldtype].map(e => { return { label: e, value: e } }),
                         options2: option2
                     };
@@ -113,7 +115,7 @@ watch(() => props.filterFields, async (newFilterFields, oldFilterFields) => {
                     return {
                         ...filter,
                         fieldname: _field?.fieldname,
-                        fieldtype: (_field?.fieldtype == 'Link' ? 'Select' : _field.fieldtype).toLowerCase(),
+                        fieldtype: (_field.fieldtype).toLowerCase(),
                         options: [],
                         options2: []
                     };

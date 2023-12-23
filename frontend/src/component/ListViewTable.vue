@@ -126,7 +126,7 @@ const applyFilters = () => {
     });
     if (allFieldsFilled) {
         isloading.value = true
-        filters.value = filterFields.value.map(item => [item.field1, item.field2, item.field3]);
+        filters.value = filterFields.value.map(item => [item.field1, item.field2, (item.field3?.value || item.field3)]);
         console.log(filterFields.value)
     } else {
         console.log('Please fill all fields in each filter before applying filters.');
