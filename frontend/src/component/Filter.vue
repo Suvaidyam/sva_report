@@ -13,7 +13,7 @@
                 <div class="flex flex-col gap-2">
                     <div v-for="(filterRow, index) in filterFields" :key="index"
                         class="flex flex-col md:flex-row gap-2 items-center">
-                        <Select v-if="fields?.filters?.length > 0" :options="getFields(index)" v-model="filterRow.field1"
+                        <Select :options="getFields(index)" v-model="filterRow.field1"
                             class="md:flex-1 w-full md:w-auto " />
                         <Select :options="newSelectedValues[index]?.options" v-model="filterRow.field2"
                             class="md:flex-1 w-full md:w-auto " />
@@ -67,6 +67,7 @@ const props = defineProps({
     },
 })
 let dataType = {
+    "": ["="],
     "Data": ["=", "!=", "Like"],
     "Phone": ["=", "!=", "Like"],
     "Int": ["=", "!=", "<", ">", "<=", ">="],
@@ -104,11 +105,18 @@ watch(() => props.filterFields, async (newFilterFields, oldFilterFields) => {
                     } else {
                         option2 = _field.options?.split('\n')?.map(item => ({ label: item, value: item }))
                     }
+                    console.log({
+                        ...filter,
+                        fieldname: _field.fieldname,
+                        fieldtype: (_field.fieldtype).toLowerCase(),
+                        options: dataType[_field.fieldtype]?.map(e => { return { label: e, value: e } }) || [{ label: '=', value: '=' }],
+                        options2: option2
+                    });
                     return {
                         ...filter,
                         fieldname: _field.fieldname,
                         fieldtype: (_field.fieldtype).toLowerCase(),
-                        options: dataType[_field.fieldtype].map(e => { return { label: e, value: e } }),
+                        options: dataType[_field.fieldtype]?.map(e => { return { label: e, value: e } }) || [{ label: '=', value: '=' }],
                         options2: option2
                     };
                 } else {
@@ -116,7 +124,7 @@ watch(() => props.filterFields, async (newFilterFields, oldFilterFields) => {
                         ...filter,
                         fieldname: _field?.fieldname,
                         fieldtype: (_field.fieldtype).toLowerCase(),
-                        options: [],
+                        options: [{ label: '=', value: '=' }],
                         options2: []
                     };
                 }
@@ -124,13 +132,13 @@ watch(() => props.filterFields, async (newFilterFields, oldFilterFields) => {
                 console.error('Error parsing JSON:', error);
             }
         }
-        return { ...filter, options: [] };
+        return { ...filter, options: [{ label: '=', value: '=' }], options2: [] };
     }));
     console.log("newSelectedValues.value", newSelectedValues.value);
 }, { deep: true });
 const addFilterField = () => {
     const newKey = props.filterFields.length + 1;
-    props.filterFields.push({ key: newKey, field1: '', field2: '', field3: '', options: [], options2: [] });
+    props.filterFields.push({ key: newKey, field1: '', field2: '', field3: '', options: [{ label: '=', value: '=' }], options2: [] });
 };
 
 const removeFilterField = (index) => {

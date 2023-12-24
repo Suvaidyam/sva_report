@@ -5,10 +5,14 @@
             <div class="flex items-center gap-2">
                 <Filter :filterCount="filterCount" :filterFields="filterFields" :applyFilters="applyFilters"
                     :clearFilters="clearFilters" :fields="resource?.data ?? {}" />
-                <div class="flex">
+                <div class="flex" v-if="false">
                     <Button size="md" :icon="'align-left'" class="rounded-l-md border rounded-r-none"></Button>
                     <Autocomplete size="md" :options="resource?.data?.columns" v-model="sortValue"
                         class="rounded-r-md border rounded-l-none bg-gray-100 py-[1px]" />
+                </div>
+                <div class="flex">
+                    <Button size="md" :icon="'download'" class="rounded-l-md border rounded-r-none"
+                        @click="handleDownload"></Button>
                 </div>
             </div>
         </div>
@@ -64,10 +68,13 @@ let sortValue = ref('Name');
 let isloading = ref(false);
 let currentPage = ref(1);
 const filterCount = ref(0);
-const filterFields = ref([{ key: 1, field1: '', field2: '', field3: '', options: [] }]);
+const filterFields = ref([{ key: 1, field1: '', field2: '', field3: '', options: [{ label: '=', value: '=' }], options2: [] }]);
 // page limit
 const handleButtonClick = (e) => {
     page_limit.value = e
+}
+const handleDownload = (e) => {
+    window.open(`/api/method/sva_report.controllers.get_report_data.execute`, '_blank');
 }
 // pagination
 const getCurrentPage = (page) => {
@@ -133,7 +140,7 @@ const applyFilters = () => {
     }
 };
 const clearFilters = () => {
-    filterFields.value = [{ key: 1, field1: '', field2: '', field3: '', options: [], options2: [] }]
+    filterFields.value = [{ key: 1, field1: '', field2: '', field3: '', options: [{ label: '=', value: '=' }], options2: [] }]
     let isValue = filterFields.value.forEach((filter) => {
         filter.field1 = '';
         filter.field2 = '';
