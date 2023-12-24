@@ -213,24 +213,6 @@ class DocTypeInfo:
                 csv_buffer.truncate(0)
             start += batch_size
 
-        response.body = csv_data.getvalue()
-        csv_data.close()
-        # Create a CSV buffer in memory
-        csv_buffer = StringIO()
-        csv_writer = csv.writer(csv_buffer)
-
-        # Write header
-        csv_writer.writerow(data[0])
-        yield csv_buffer.getvalue()
-        csv_buffer.seek(0)
-        csv_buffer.truncate(0)
-
-        # Write data in batches
-        for row in data[1:]:
-            csv_writer.writerow(row)
-            yield csv_buffer.getvalue()
-            csv_buffer.seek(0)
-            csv_buffer.truncate(0)
     def export_csv(doc_type, with_query):
         response = Response(DocTypeInfo.generate_csv(doc_type, with_query), content_type='text/csv')
         response.http_status_code = 200
