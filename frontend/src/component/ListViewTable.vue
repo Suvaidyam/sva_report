@@ -74,7 +74,7 @@ const handleButtonClick = (e) => {
     page_limit.value = e
 }
 const handleDownload = (e) => {
-    window.open(`/api/method/sva_report.controllers.get_report_data.execute`, '_blank');
+    window.open(`/api/method/sva_report.controllers.get_report_data.execute?doc=${props.doctype}&csv_export=1`, '_blank');
 }
 // pagination
 const getCurrentPage = (page) => {
