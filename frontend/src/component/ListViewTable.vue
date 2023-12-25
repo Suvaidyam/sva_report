@@ -11,8 +11,10 @@
                         class="rounded-r-md border rounded-l-none bg-gray-100 py-[1px]" />
                 </div>
                 <div class="flex">
-                    <Button size="md" :icon="'download'" class="rounded-l-md border rounded-r-none"
+                    <Tooltip text="download csv">
+                        <Button size="md" :icon="'download'"
                         @click="handleDownload"></Button>
+                    </Tooltip>
                 </div>
             </div>
         </div>
@@ -38,7 +40,7 @@
 </template>
 
 <script setup>
-import { List, createResource, Autocomplete } from 'frappe-ui'
+import { List, createResource, Autocomplete, Tooltip } from 'frappe-ui'
 import { ref, watch } from 'vue'
 import Loader from '@/component/Loader.vue'
 import Filter from '@/component/Filter.vue'
