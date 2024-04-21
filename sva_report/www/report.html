@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/assets/sva_report/frontend/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Suvaidyam Report</title>
+    <script type="module" crossorigin src="/assets/sva_report/frontend/assets/index-B1J-fSL4.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/sva_report/frontend/assets/index-D3MPMgvX.css">
+  </head>
+  <body>
+    <div id="app"></div>
+    <div id="modals"></div>
+    <div id="popovers"></div>
+
+    <script>
+      window.csrf_token = '{{ frappe.session.csrf_token }}'
+    </script>
+  </body>
+</html>
