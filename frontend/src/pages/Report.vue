@@ -9,9 +9,9 @@
                 size="md"
                 />
         </div>
-        <TabList v-if="doc?.data" 
+        <TabList v-if="doc?.data"
             :tabs="doc?.data?.map(tab => ({ label: tab.name }))" />
-        
+
     </div>
 </template>
 

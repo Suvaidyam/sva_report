@@ -12,15 +12,15 @@
                 </div>
                 <div class="flex">
                     <Tooltip text="download csv">
-                        <Button size="md" :icon="'download'"
-                        @click="handleDownload"></Button>
+                        <Button size="md" :icon="'download'" @click="handleDownload"></Button>
                     </Tooltip>
                 </div>
             </div>
         </div>
         <div class="w-full h-full overflow-y-auto">
+            <!-- {{ resource?.data?.data }} -->
             <Loader v-if="isloading" />
-            <List v-else :columns="resource?.data?.columns" :rows="resource?.data?.data" />
+            <List v-else :columns="resource?.data?.columns" :rows="resource?.data?.data" row-key="name" />
         </div>
         <div class="w-full h-16 sticky bottom-0 border-t flex justify-between items-center px-4">
             <div class="flex w-44">

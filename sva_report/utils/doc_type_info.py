@@ -2,8 +2,9 @@ import frappe
 import csv
 from io import StringIO
 from frappe.utils.response import Response
+import copy
 
-allowed_types = ['Data', 'Int', 'Select', 'Check', 'Phone']
+allowed_types = ['Data','Date' 'Int', 'Select', 'Check', 'Phone']
 child_types = ['Table', 'Table MultiSelect']
 class DocTypeInfo:
 
@@ -65,6 +66,7 @@ class DocTypeInfo:
         report_fields = [column.fieldname for column in report_doc.columns]
         all_fields = DocTypeInfo.get_fields(report_doc.ref_doctype,[], parent_field="")
         fields = []
+        # print("report_fields",report_fields, all_fields)
         if len(report_fields) > 0:
             for column in report_fields:
                 for field in all_fields:
@@ -94,14 +96,15 @@ class DocTypeInfo:
             elif field.get('child_table') and field.get('link_table'):
                 tbl_name_ = f"`tab{field.get('child_table').get('options')}`"
                 lnk_fieldname_ = f"{field.get('child_table').get('fieldname')}"
+                lnk_fieldname_alias_ = f"{lnk_fieldname_}_child"
                 if lnk_fieldname_ not in unique_child_table:
-                    joins.append(f"LEFT JOIN {tbl_name_} as {lnk_fieldname_} ON {lnk_fieldname_}.`parent` = {base_tbl}.name")
+                    joins.append(f"LEFT JOIN {tbl_name_} as {lnk_fieldname_alias_} ON {lnk_fieldname_alias_}.`parent` = {base_tbl}.name")
                     unique_child_table.append(lnk_fieldname_)
 
                 tbl_name = f"`tab{field.get('link_table').get('options')}`"
                 lnk_fieldname = f"{field.get('link_table').get('fieldname')}"
                 if lnk_fieldname not in unique_child_link_table:
-                    joins.append(f"LEFT JOIN {tbl_name} as {lnk_fieldname} ON {lnk_fieldname}.`name` = {lnk_fieldname_}.{lnk_fieldname}")
+                    joins.append(f"LEFT JOIN {tbl_name} as {lnk_fieldname} ON {lnk_fieldname}.`name` = {lnk_fieldname_alias_}.parent")
                     unique_child_link_table.append(lnk_fieldname)
         return '\n'.join(joins)
     def prepare_columns(base_tbl,fields):
@@ -219,10 +222,130 @@ class DocTypeInfo:
         response.headers["Content-Disposition"] = f"attachment; filename={doc_type.lower()}.csv"
         return response
 
-    def get_data(doc_type, doc_name,filters=[], skip=0, limit=10,csv_export='1',debug=False ):
+    def get_fields_info(fields):
+        obj = {
+            'columns':['name'],
+            '_columns':[],
+            'children':{}
+        }
+        for field in fields:
+            if field.get('child_table') is None:
+                obj.get('columns').append(f"{field.get('fieldname')} as `{field.get('fieldname')}`")
+                obj.get('_columns').append(field.get('fieldname'))
+            else:
+                child_table_field = field.get('child_table').get('fieldname')
+                _fn = field.get('fieldname').replace(f"{child_table_field}.",'', 1)
+                fn = f"{_fn} as `{_fn}`"
+                # fn = f"{_fn} as `{field.get('fieldname')}`"
+                if obj.get('children').get(child_table_field):
+                    obj['children'][child_table_field].get('columns').append(fn)
+                    obj['children'][child_table_field].get('_columns').append(_fn)
+                else:
+                    obj['children'][child_table_field] = {
+                        'columns':[fn],
+                        '_columns':[_fn],
+                        'info':field.get('child_table')
+                    }
+        return obj
+    def create_data(rows, fields):
+        obj,index = fields, 1
+        for row in rows:
+            for child_table in obj.get('children'):
+                ct_info = obj.get('children').get(child_table).get('info')
+                ct_columns = obj.get('children').get(child_table).get('columns')
+                _ct_columns = obj.get('children').get(child_table).get('_columns')
+                records = frappe.get_list(ct_info.get('options'),fields=ct_columns, filters={'parent':row.name,'parenttype':ct_info.get('parenttype')})
+                # row[child_table] = records
+                if ct_info.get('fieldtype') == "Table MultiSelect":
+                    if len(_ct_columns):
+                        k = _ct_columns[0]
+                        row[f"{child_table}.{k}"] = ",".join([record[k] for record in records])
+                else:
+                    for record in records:
+                        for k in _ct_columns:
+                            row[f"{child_table}.{k}"] = record.get(k, None)
+
+            row.id = index
+            index = index+1
+        return rows
+    def write_csv_data(report_doc,fields, fields_info, filters):
+        headers = [field.get('label') for field in fields]
+        csv_buffer = StringIO()
+        csv_writer = csv.writer(csv_buffer)
+        csv_writer.writerow(headers)
+        yield csv_buffer.getvalue()
+        csv_buffer.seek(0)
+        csv_buffer.truncate(0)
+
+        skip, limit= 0, 100
+        while True:
+            rows = frappe.get_list(report_doc.ref_doctype,fields=fields_info.get('columns'),filters=filters, start=skip,page_length=limit)
+            results = DocTypeInfo.create_data(rows, fields_info)
+            res_data = []
+            csv_buffer = StringIO()
+            csv_writer = csv.writer(csv_buffer)
+            for result in results:
+                # res_data.append([f"`{result.get(field.get('fieldname'), '')}`" for field in fields])
+                csv_writer.writerow([f"`{result.get(field.get('fieldname'), '')}`" for field in fields])
+            yield csv_buffer.getvalue()
+            csv_buffer.seek(0)
+            csv_buffer.truncate(0)
+
+            if skip < limit:
+                break
+            skip = skip + limit
+
+    def get_data(doc_type, doc_name,filters=[], skip=0, limit=10,csv_export='0',debug=False):
+        # return "doc_name"
         report_doc = frappe.get_doc(doc_type, doc_name)
         fields = DocTypeInfo.prepare_fields(report_doc)
+        fields_info = DocTypeInfo.get_fields_info(fields)
+        # return fields
+        # proof_of_disability.proof_of_disability.proof_of_disability
+        if report_doc.ref_doctype is not None:
+            if csv_export == "1":
+                response = Response(DocTypeInfo.write_csv_data(report_doc,fields, fields_info, filters), content_type='text/csv')
+                response.http_status_code = 200
+                response.headers["Content-Disposition"] = f"attachment; filename={doc_type.lower()}.csv"
+                return response
+            else:
+                results, count = [], 0
+                count_res = frappe.get_list(report_doc.ref_doctype,fields=["count(name) as count"],filters=filters)
+                if len(count_res):
+                    count = count_res[0].count
+                rows = frappe.get_list(report_doc.ref_doctype,fields=fields_info.get('columns'),filters=filters, start=skip,page_length=limit)
+                results = DocTypeInfo.create_data(rows, fields_info)
+                return {
+                    'filters':[
+                        {
+                            "label":field.get('label'),
+                            "name":field.get('label'),
+                            "fieldname":field.get('fieldname'),
+                            "fieldtype":field.get('fieldtype'),
+                            "options":field.get('options')
+                        } for field in report_doc.filters
+                    ],
+                    'columns':[{
+                        "label":field.get('label'),
+                        "name":field.get('label'),
+                        "fieldname":field.get('fieldname'),
+                        "key":field.get('fieldname'),
+                        "fieldtype":field.get('fieldtype'),
+                        "options":field.get('options')
+                        } for field in fields
+                    ],
+                    'data':results,
+                    'total_records':count
+                }
+        else:
+            return "Invalid"
+    def get_data_old(doc_type, doc_name,filters=[], skip=0, limit=10,csv_export='1',debug=False ):
+        report_doc = frappe.get_doc(doc_type, doc_name)
+        fields = DocTypeInfo.prepare_fields(report_doc)
+        # print("fields",fields,report_doc)
         with_query = DocTypeInfo.prepare_base_query(report_doc.ref_doctype,fields,report_doc.filters, filters)
+        # print("with_query",with_query)
+        # return with_query
         if csv_export != '1':
             count=DocTypeInfo.get_total(with_query, skip)
             results=DocTypeInfo.get_result(with_query, skip, limit)
