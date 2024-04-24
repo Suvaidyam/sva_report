@@ -248,26 +248,39 @@ class DocTypeInfo:
                     }
         return obj
     def create_data(rows, fields):
-        obj,index = fields, 1
-        for row in rows:
-            for child_table in obj.get('children'):
-                ct_info = obj.get('children').get(child_table).get('info')
-                ct_columns = obj.get('children').get(child_table).get('columns')
-                _ct_columns = obj.get('children').get(child_table).get('_columns')
-                records = frappe.get_list(ct_info.get('options'),fields=ct_columns, filters={'parent':row.name,'parenttype':ct_info.get('parenttype')})
-                # row[child_table] = records
-                if ct_info.get('fieldtype') == "Table MultiSelect":
-                    if len(_ct_columns):
-                        k = _ct_columns[0]
-                        row[f"{child_table}.{k}"] = ",".join([record[k] for record in records])
-                else:
-                    for record in records:
-                        for k in _ct_columns:
-                            row[f"{child_table}.{k}"] = record.get(k, None)
+        obj,index, res_data = fields, 1, []
+        table_multiselect = [obj.get('children').get(child_table_name) for child_table_name in obj.get('children') if obj.get('children').get(child_table_name).get('info').get('fieldtype') == "Table MultiSelect"]
+        tables = [obj.get('children').get(child_table_name) for child_table_name in obj.get('children') if obj.get('children').get(child_table_name).get('info').get('fieldtype') != "Table MultiSelect"]
 
+        for row in rows:
             row.id = index
             index = index+1
-        return rows
+            _rows = []
+            for child_table in table_multiselect:
+                ct_info = child_table.get('info')
+                ct_columns = child_table.get('columns')
+                _ct_columns = child_table.get('_columns')
+                records = frappe.get_list(ct_info.get('options'),fields=ct_columns, filters={'parent':row.name,'parenttype':ct_info.get('parenttype')})
+                if len(_ct_columns):
+                    k = _ct_columns[0]
+                    row[f"{ct_info.get('fieldname')}.{k}"] = ",".join([record[k] for record in records])
+            _rows.append(row)
+            for child_table in tables:
+                ct_info = child_table.get('info')
+                ct_columns = child_table.get('columns')
+                _ct_columns = child_table.get('_columns')
+                records = frappe.get_list(ct_info.get('options'),fields=ct_columns, filters={'parent':row.name,'parenttype':ct_info.get('parenttype')})
+                # row[child_table] = records
+                for i,record in enumerate(records):
+                    if len(_rows) < (i+1):
+                        index = index+1
+                        _rows.append({'id':index})
+                    for k in _ct_columns:
+                        # print("data:",ct_info,k)
+                        _rows[i][f"{ct_info.get('fieldname')}.{k}"] = record.get(k, None)
+            res_data.extend(_rows)
+        # print("res_data",res_data)
+        return res_data
     def write_csv_data(report_doc,fields, fields_info, filters):
         headers = [field.get('label') for field in fields]
         csv_buffer = StringIO()
