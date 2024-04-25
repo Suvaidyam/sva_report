@@ -1,7 +1,7 @@
 <template>
     <div class="w-full mx-auto border h-full relative rounded-md flex flex-col">
         <div class="w-full sticky top-0 md:h-14 border-b flex flex-col md:flex-row py-1
-             justify-end items-center px-4 gap-2">
+            justify-end items-center px-4 gap-2">
             <div class="flex items-center gap-2">
                 <Filter :filterCount="filterCount" :filterFields="filterFields" :applyFilters="applyFilters"
                     :clearFilters="clearFilters" :fields="resource?.data ?? {}" />
@@ -18,9 +18,25 @@
             </div>
         </div>
         <div class="w-full h-full overflow-y-auto">
-            <!-- {{ resource?.data?.data }} -->
             <Loader v-if="isloading" />
-            <List v-else :columns="resource?.data?.columns" :rows="resource?.data?.data" row-key="name" />
+            <!-- LIST TABLE -->
+            <div v-else >
+                <table class="w-full text-sm text-left rtl:text-right text-gray-500">
+                    <thead class="text-xs text-gray-800 bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-2" v-for="(column, index) in resource?.data?.columns" :key="index">{{ column.label }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="bg-white border-b hover:bg-gray-100" v-for="(item, itemIndex) in resource?.data?.data" :key="itemIndex">
+                            <td scope="row" class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap" v-for="(column, columnIndex) in resource?.data?.columns" :key="columnIndex">
+                                {{ item[column.key] }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <!-- LIST TABLE -->
         </div>
         <div class="w-full h-16 sticky bottom-0 border-t flex justify-between items-center px-4">
             <div class="flex w-44">
@@ -40,7 +56,7 @@
 </template>
 
 <script setup>
-import { List, createResource, Autocomplete, Tooltip } from 'frappe-ui'
+import { createResource, Autocomplete, Tooltip } from 'frappe-ui'
 import { ref, watch } from 'vue'
 import Loader from '@/component/Loader.vue'
 import Filter from '@/component/Filter.vue'
