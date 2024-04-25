@@ -29,7 +29,11 @@ frappe.ui.form.on("SVA Report", {
           // console.log("fields",fields)
       }
       var d = new frappe.ui.Dialog({
-          'fields': fields.map(field=> {return {fieldname:field.fieldname, fieldtype:"Check", label:field.label}}),
+          'fields': [{
+   "fieldname": "origin_details_section",
+   "fieldtype": "Section Break",
+   "label": "Origin details"
+  },...fields.map(field=> {return {fieldname:field.fieldname, fieldtype:"Check", label:field.label}})],
           primary_action: function(obj){
               d.hide();
               console.log(d.get_values(),obj);
