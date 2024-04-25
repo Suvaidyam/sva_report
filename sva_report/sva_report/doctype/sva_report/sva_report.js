@@ -45,18 +45,16 @@ frappe.ui.form.on("SVA Report", {
         freeze_message: __("Getting fields..."),
       })
     }
-    if (!checked_data.length) {
-      checked_data = await callAPI({
-        method: 'sva_report.controllers.child_table_crud.get_all_child_doc',
-        args: {
-          doctype: "Report Column",
-          parent: frm.doc.name,
-          parentfield: "columns",
-          parenttype: "SVA Report",
-        },
-        freeze_message: __("Getting fields..."),
-      })
-    }
+    checked_data = await callAPI({
+      method: 'sva_report.controllers.child_table_crud.get_all_child_doc',
+      args: {
+        doctype: "Report Column",
+        parent: frm.doc.name,
+        parentfield: "columns",
+        parenttype: "SVA Report",
+      },
+      freeze_message: __("Getting fields..."),
+    })
     const arrangedFields = await arrangeFields(fields, checked_data);
     let dialog_fields = [{
       "fieldname": "origin_details_section",
@@ -96,6 +94,7 @@ frappe.ui.form.on("SVA Report", {
           });
         }
         d.hide();
+        frm.debounced_reload_doc();
       }
     });
     d.show();
