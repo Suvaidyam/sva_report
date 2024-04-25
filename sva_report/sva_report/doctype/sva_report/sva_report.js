@@ -58,12 +58,9 @@ frappe.ui.form.on("SVA Report", {
       })
     }
     const arrangedFields = await arrangeFields(fields, checked_data);
-    let dialog_fields = [{
-      "fieldname": "origin_details_section",
-      "fieldtype": "Section Break",
-      "label": "Origin details"
-    }, ...arrangedFields]
+    let dialog_fields = [...arrangedFields]
     var d = new frappe.ui.Dialog({
+      'title':"Fields",
       'fields': dialog_fields,
       primary_action: async function (obj) {
         const filteredKeys = Object.entries(obj).filter(([key, value]) => value === 1).map(([key, value]) => key);
