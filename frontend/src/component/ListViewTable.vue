@@ -1,35 +1,44 @@
 <template>
     <div class="w-full mx-auto border h-full relative rounded-md flex flex-col">
-        <div class="w-full sticky top-0 md:h-14 border-b flex flex-col md:flex-row py-1
-            justify-end items-center px-4 gap-2">
-            <div class="flex items-center gap-2">
-                <Filter :filterCount="filterCount" :filterFields="filterFields" :applyFilters="applyFilters"
-                    :clearFilters="clearFilters" :fields="resource?.data ?? {}" />
-                <div class="flex" v-if="false">
-                    <Button size="md" :icon="'align-left'" class="rounded-l-md border rounded-r-none"></Button>
-                    <Autocomplete size="md" :options="resource?.data?.columns" v-model="sortValue"
-                        class="rounded-r-md border rounded-l-none bg-gray-100 py-[1px]" />
-                </div>
-                <div class="flex">
-                    <Tooltip text="download csv">
-                        <Button size="md" :icon="'download'" @click="handleDownload"></Button>
-                    </Tooltip>
+
+        <div class="w-full flex items-center border-b justify-between">
+            <div class="pl-4 h-auto w-[50%] font-semibold text-sm text-gray-700">
+                <p>Total records :- <span>{{ resource?.data?.total_records ?? 0 }}</span></p>
+            </div>
+            <div
+                class="w-[50%] sticky top-0 md:h-14 flex flex-col md:flex-row py-1 justify-end items-center px-4 gap-2">
+                <div class="flex items-center gap-2">
+                    <Filter :filterCount="filterCount" :filterFields="filterFields" :applyFilters="applyFilters"
+                        :clearFilters="clearFilters" :fields="resource?.data ?? {}" />
+                    <div class="flex" v-if="false">
+                        <Button size="md" :icon="'align-left'" class="rounded-l-md border rounded-r-none"></Button>
+                        <Autocomplete size="md" :options="resource?.data?.columns" v-model="sortValue"
+                            class="rounded-r-md border rounded-l-none bg-gray-100 py-[1px]" />
+                    </div>
+                    <div class="flex">
+                        <Tooltip text="download csv">
+                            <Button size="md" :icon="'download'" @click="handleDownload"></Button>
+                        </Tooltip>
+                    </div>
                 </div>
             </div>
         </div>
         <div class="w-full h-full overflow-y-auto">
             <Loader v-if="isloading" />
             <!-- LIST TABLE -->
-            <div v-else >
+            <div v-else>
                 <table class="w-full text-sm text-left rtl:text-right text-gray-500">
                     <thead class="text-xs text-gray-800 bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-4 py-2" v-for="(column, index) in resource?.data?.columns" :key="index">{{ column.label }}</th>
+                            <th scope="col" class="px-4 py-2" v-for="(column, index) in resource?.data?.columns"
+                                :key="index">{{ column.label }}</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="bg-white border-b hover:bg-gray-100" v-for="(item, itemIndex) in resource?.data?.data" :key="itemIndex">
-                            <td scope="row" class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap" v-for="(column, columnIndex) in resource?.data?.columns" :key="columnIndex">
+                        <tr class="bg-white border-b hover:bg-gray-100"
+                            v-for="(item, itemIndex) in resource?.data?.data" :key="itemIndex">
+                            <td scope="row" class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap"
+                                v-for="(column, columnIndex) in resource?.data?.columns" :key="columnIndex">
                                 {{ item[column.key] }}
                             </td>
                         </tr>
