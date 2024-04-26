@@ -4,7 +4,7 @@
 import frappe
 
 @frappe.whitelist()
-def insert_child_doc(doctype=None,parent=None,parentfield=None,parenttype=None,fieldname=None,label=None,fieldtype=None):
+def insert_child_doc(doctype=None,parent=None,parentfield=None,parenttype=None,fieldname=None,label=None,fieldtype=None,idx=None):
     doc = frappe.get_doc({
         'doctype': doctype,
         'parent':parent,
@@ -12,7 +12,8 @@ def insert_child_doc(doctype=None,parent=None,parentfield=None,parenttype=None,f
         'parenttype':parenttype,
         'fieldname':fieldname,
         'label':label,
-        'fieldtype':fieldtype
+        'fieldtype':fieldtype,
+        'idx':idx
     })
     doc.insert(ignore_permissions=True)
     return doc
@@ -34,6 +35,7 @@ def get_all_child_doc(doctype=None,parent=None,parentfield=None,parenttype=None)
             'parenttype':parenttype
         },
         pluck='fieldname',
+        order_by='idx asc',
         ignore_permissions=True
     )
     return list
