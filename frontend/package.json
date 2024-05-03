@@ -3,7 +3,8 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "yarn add vite && vite",
+    "dev": "vite",
+    "pre-build":"yarn add vite",
     "build": "vite build --base=/assets/sva_report/frontend/ && yarn copy-html-entry",
     "preview": "vite preview",
     "copy-html-entry": "cp ../sva_report/public/frontend/index.html ../sva_report/www/report.html"
