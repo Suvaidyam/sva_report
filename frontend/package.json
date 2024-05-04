@@ -4,7 +4,6 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "pre-build":"yarn add vite",
     "build": "vite build --base=/assets/sva_report/frontend/ && yarn copy-html-entry",
     "preview": "vite preview",
     "copy-html-entry": "cp ../sva_report/public/frontend/index.html ../sva_report/www/report.html"
@@ -17,10 +16,10 @@
     "vue-router": "^4.0.12"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^2.0.0",
+    "@vitejs/plugin-vue": "^5.0.4",
     "autoprefixer": "^10.4.2",
     "postcss": "^8.4.5",
     "tailwindcss": "^3.0.15",
-    "vite": "^5.2.8"
+    "vite": "^5.2.11"
   }
 }
