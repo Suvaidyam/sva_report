@@ -23,7 +23,7 @@ class DocTypeInfo:
         ref_doc_meta = frappe.get_meta(doc_type)
         for field in ref_doc_meta.fields:
             local_field = {"label": field.label,"fieldtype": field.fieldtype,"fieldname": f"{field.fieldname}","options": field.options}
-            if field.fieldtype in allowed_types and field.print_hide != 1:
+            if field.fieldtype in allowed_types and field.print_hide != 1 and field.hidden != 1:
                 fields.append({
                     "doc_type":doc_type,
                     "label": field.label,
