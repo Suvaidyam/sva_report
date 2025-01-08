@@ -133,7 +133,7 @@ function buttion(frm) {
 function DataExportButton(frm) {
     frm.add_custom_button(__('Export'), function () {
             const a = document.createElement('a');
-            a.href = `/api/method/sva_report.sva_report.controllers.get_report_data.execute?doc=${frm.doc.name}&csv_export=1`;
+            a.href = `/api/method/sva_report.controllers.get_report_data.execute?doc=${frm.doc.name}&csv_export=1`;
             a.target = '_blank'; // Open link in new tab
             a.download = ''; // This attribute triggers the download
             document.body.appendChild(a);
