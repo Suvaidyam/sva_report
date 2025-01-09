@@ -4,7 +4,7 @@ from io import StringIO
 from frappe.utils.response import Response
 import copy
 
-allowed_types = ['Data','Date', 'Int', 'Select', 'Check', 'Phone']
+allowed_types = ['Data','Date', 'Int', 'Select', 'Check', 'Phone','Small Text','Text','Table MultiSelect']
 child_types = ['Table', 'Table MultiSelect']
 class DocTypeInfo:
 
@@ -261,6 +261,7 @@ class DocTypeInfo:
                 ct_columns = child_table.get('columns')
                 _ct_columns = child_table.get('_columns')
                 records = frappe.get_list(ct_info.get('options'),fields=ct_columns, filters={'parent':row.name,'parenttype':ct_info.get('parenttype')})
+                
                 if len(_ct_columns):
                     k = _ct_columns[0]
                     row[f"{ct_info.get('fieldname')}.{k}"] = ",".join([record[k] for record in records])
@@ -282,7 +283,9 @@ class DocTypeInfo:
         # print("res_data",res_data)
         return res_data
     def write_csv_data(report_doc,fields, fields_info, filters):
-        headers = [field.get('label') for field in fields]
+        headers = [(column.get('label') if (column := next(
+                            (col for col in report_doc.get('columns', []) 
+                            if col.get('fieldname') == field.get('fieldname')), None)) else field.get('label')) for field in fields]
         csv_buffer = StringIO()
         csv_writer = csv.writer(csv_buffer)
         csv_writer.writerow(headers)
@@ -299,7 +302,7 @@ class DocTypeInfo:
             csv_writer = csv.writer(csv_buffer)
             for result in results:
                 # res_data.append([f"`{result.get(field.get('fieldname'), '')}`" for field in fields])
-                csv_writer.writerow([f"`{result.get(field.get('fieldname'), '')}`" for field in fields])
+                csv_writer.writerow([f"{result.get(field.get('fieldname'), '')}" for field in fields])
             yield csv_buffer.getvalue()
             csv_buffer.seek(0)
             csv_buffer.truncate(0)
@@ -339,14 +342,15 @@ class DocTypeInfo:
                         } for field in report_doc.filters
                     ],
                     'columns':[{
-                        "label":field.get('label'),
-                        "name":field.get('label'),
-                        "fieldname":field.get('fieldname'),
-                        "key":field.get('fieldname'),
-                        "fieldtype":field.get('fieldtype'),
-                        "options":field.get('options')
-                        } for field in fields
-                    ],
+                        "label": (column.get('label') if (column := next(
+                            (col for col in report_doc.get('columns', []) 
+                            if col.get('fieldname') == field.get('fieldname')), None)) else field.get('label')),
+                        "name": field.get('label'),
+                        "fieldname": field.get('fieldname'),
+                        "key": field.get('fieldname'),
+                        "fieldtype": field.get('fieldtype'),
+                        "options": field.get('options')
+                    } for field in fields],
                     'data':results,
                     'total_records':count
                 }
@@ -355,7 +359,7 @@ class DocTypeInfo:
     def get_data_old(doc_type, doc_name,filters=[], skip=0, limit=10,csv_export='1',debug=False ):
         report_doc = frappe.get_doc(doc_type, doc_name)
         fields = DocTypeInfo.prepare_fields(report_doc)
-        # print("fields",fields,report_doc)
+
         with_query = DocTypeInfo.prepare_base_query(report_doc.ref_doctype,fields,report_doc.filters, filters)
         # print("with_query",with_query)
         # return with_query

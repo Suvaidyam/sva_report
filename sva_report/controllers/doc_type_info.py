@@ -4,7 +4,7 @@ from io import StringIO
 from frappe.utils.response import Response
 import copy
 
-allowed_types = ['Data','Date', 'Int', 'Select', 'Check', 'Phone']
+allowed_types = ['Data','Date', 'Int', 'Select', 'Check', 'Phone','Small Text','Text']
 child_types = ['Table', 'Table MultiSelect']
 class DocTypeInfo:
 

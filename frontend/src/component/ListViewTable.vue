@@ -8,7 +8,7 @@
             <div
                 class="w-[50%] sticky top-0 md:h-14 flex flex-col md:flex-row py-1 justify-end items-center px-4 gap-2">
                 <div class="flex items-center gap-2">
-                    <Filter :filterCount="filterCount" :filterFields="filterFields" :applyFilters="applyFilters"
+                    <Filter v-if="resource?.data?.filters.length" :filterCount="filterCount" :filterFields="filterFields" :applyFilters="applyFilters"
                         :clearFilters="clearFilters" :fields="resource?.data ?? {}" />
                     <div class="flex" v-if="false">
                         <Button size="md" :icon="'align-left'" class="rounded-l-md border rounded-r-none"></Button>
