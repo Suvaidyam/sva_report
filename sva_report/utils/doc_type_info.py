@@ -3,6 +3,7 @@ import csv
 from io import StringIO
 from frappe.utils.response import Response
 import copy
+from datetime import datetime
 
 allowed_types = ['Data','Date', 'Int', 'Select', 'Check', 'Phone','Small Text','Text','Table MultiSelect']
 child_types = ['Table', 'Table MultiSelect']
@@ -310,12 +311,17 @@ class DocTypeInfo:
         while True:
             rows = frappe.get_list(report_doc.ref_doctype,fields=fields_a,filters=filters, start=skip,page_length=limit)
             results = DocTypeInfo.create_data(rows, fields_info)
+            for result in results:
+                if result.get('docstatus') is not None:
+                    result['docstatus'] = 'Draft' if result.get('docstatus') == 0 else ('Submitted' if result.get('docstatus') == 1 else 'Cancelled')
+                if result.get('modified') is not None:
+                        result['modified'] = datetime.strptime(str(result.get('modified')), "%Y-%m-%d %H:%M:%S.%f").date()
             res_data = []
             csv_buffer = StringIO()
             csv_writer = csv.writer(csv_buffer)
             for result in results:
                 # res_data.append([f"`{result.get(field.get('fieldname'), '')}`" for field in fields])
-                csv_writer.writerow([f"{result.get(field.get('fieldname'), '')}" for field in fields])
+                csv_writer.writerow([f"{result.get(field.get('fieldname'), '') or ''}" for field in fields])
             yield csv_buffer.getvalue()
             csv_buffer.seek(0)
             csv_buffer.truncate(0)
@@ -359,6 +365,8 @@ class DocTypeInfo:
                 for result in results:
                     if result.get('docstatus') is not None:
                         result['docstatus'] = 'Draft' if result.get('docstatus') == 0 else ('Submitted' if result.get('docstatus') == 1 else 'Cancelled')
+                    if result.get('modified') is not None:
+                        result['modified'] = datetime.strptime(str(result.get('modified')), "%Y-%m-%d %H:%M:%S.%f").date()
                 return {
                     'filters':[
                         {
