@@ -283,6 +283,19 @@ class DocTypeInfo:
         # print("res_data",res_data)
         return res_data
     def write_csv_data(report_doc,fields, fields_info, filters):
+        fields_a = fields_info.get('columns') or [] 
+        index = 0
+        for column in report_doc.columns:
+            if column.get('fieldname') in ['name','docstatus', 'creation','modified','modified_by','owner']:
+                fields.insert(index,{
+                    "label":column.get('label'), 
+                    "fieldname":column.get('fieldname'),
+                    "fieldtype":column.get('fieldtype'),
+                    "options":column.get('options')
+                })
+                fields_a.append(column.get('fieldname'))
+            index += 1
+            
         headers = [(column.get('label') if (column := next(
                             (col for col in report_doc.get('columns', []) 
                             if col.get('fieldname') == field.get('fieldname')), None)) else field.get('label')) for field in fields]
@@ -295,7 +308,7 @@ class DocTypeInfo:
 
         skip, limit= 0, 100
         while True:
-            rows = frappe.get_list(report_doc.ref_doctype,fields=fields_info.get('columns'),filters=filters, start=skip,page_length=limit)
+            rows = frappe.get_list(report_doc.ref_doctype,fields=fields_a,filters=filters, start=skip,page_length=limit)
             results = DocTypeInfo.create_data(rows, fields_info)
             res_data = []
             csv_buffer = StringIO()
