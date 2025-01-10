@@ -5,7 +5,6 @@
 tags
 node_modules
 __pycache__
-sva_report/public
 frontend/package-lock.json
 frontend/yarn.lock
 package-lock.json
