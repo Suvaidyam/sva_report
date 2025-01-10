@@ -14,12 +14,12 @@
                     <div v-for="(filterRow, index) in filterFields" :key="index"
                         class="flex flex-col md:flex-row gap-2 items-center">
                         <Select :options="getFields(index)" v-model="filterRow.field1"
-                            class="md:flex-1 w-full md:w-auto " />
+                            class="md:flex-1 w-full md:w-44 " />
                         <Select :options="newSelectedValues[index]?.options" v-model="filterRow.field2"
-                            class="md:flex-1 w-full md:w-auto " />
+                            class="md:flex-1 w-full md:w-16 " />
                         <!-- newSelectedValues[index]?.options[0]?.type?.toLowerCase() -->
                         <Autocomplete v-if="newSelectedValues[index]?.fieldtype == 'link'" v-model="filterRow.field3"
-                            :options="newSelectedValues[index]?.options2" class="md:flex-1 w-full md:w-auto " />
+                            :options="newSelectedValues[index]?.options2" class="md:flex-1 w-full md:w-48 " />
                         <FormControl v-else :type="newSelectedValues[index]?.fieldtype" size="sm" variant="subtle"
                             v-model="filterRow.field3" :options="newSelectedValues[index]?.options2"
                             class="md:flex-1 w-full md:w-auto " />

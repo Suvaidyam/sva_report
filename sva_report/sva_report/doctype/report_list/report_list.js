@@ -23,6 +23,7 @@ function fetchAndRenderData(frm, limit, filters) {
                                 options: fltr.options,
                                 default: fltr.default || ''
                             })) || [],
+
                             function (values) {
                                 let appliedFilters = {};
                                 filter_fields.forEach(filter => {
@@ -30,6 +31,7 @@ function fetchAndRenderData(frm, limit, filters) {
                                 });
                                 fetchAndRenderData(frm, {}, appliedFilters);
                             },
+                            __('Filter'),
                             __('Apply')
                         );
                     });

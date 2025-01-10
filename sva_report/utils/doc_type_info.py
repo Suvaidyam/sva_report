@@ -329,8 +329,23 @@ class DocTypeInfo:
                 count_res = frappe.get_list(report_doc.ref_doctype,fields=["count(name) as count"],filters=filters)
                 if len(count_res):
                     count = count_res[0].count
-                rows = frappe.get_list(report_doc.ref_doctype,fields=fields_info.get('columns'),filters=filters, start=skip,page_length=limit)
+                fields_a = fields_info.get('columns') or [] 
+                index = 0
+                for column in report_doc.columns:
+                    if column.get('fieldname') in ['name','docstatus', 'creation','modified','modified_by','owner']:
+                        fields.insert(index,{
+                            "label":column.get('label'), 
+                            "fieldname":column.get('fieldname'),
+                            "fieldtype":column.get('fieldtype'),
+                            "options":column.get('options')
+                        })
+                        fields_a.append(column.get('fieldname'))
+                    index += 1
+                rows = frappe.get_list(report_doc.ref_doctype,fields=fields_a,filters=filters, start=skip,page_length=limit)
                 results = DocTypeInfo.create_data(rows, fields_info)
+                for result in results:
+                    if result.get('docstatus') is not None:
+                        result['docstatus'] = 'Draft' if result.get('docstatus') == 0 else ('Submitted' if result.get('docstatus') == 1 else 'Cancelled')
                 return {
                     'filters':[
                         {
