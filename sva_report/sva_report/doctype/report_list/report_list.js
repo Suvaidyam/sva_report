@@ -1,4 +1,3 @@
-
 let filters_data;
 
 function fetchAndRenderData(frm, limit, filters) {
@@ -13,32 +12,6 @@ function fetchAndRenderData(frm, limit, filters) {
             if (response.message) {
                 renderDataTable(response.message);
                 filters_data = response.message.filters
-                if(filters_data.length > 0){
-                    frm.add_custom_button('Filter', () => {
-                        frappe.prompt(
-                            filter_fields = filters_data?.map(fltr => ({
-                                fieldname: fltr.fieldname,
-                                fieldtype: fltr.fieldtype,
-                                label: fltr.label,
-                                options: fltr.options,
-                                default: fltr.default || ''
-                            })) || [],
-
-                            function (values) {
-                                let appliedFilters = {};
-                                filter_fields.forEach(filter => {
-                                    appliedFilters[filter.fieldname] = values[filter.fieldname];
-                                });
-                                fetchAndRenderData(frm, {}, appliedFilters);
-                            },
-                            __('Filter'),
-                            __('Apply')
-                        );
-                    });
-                    frm.add_custom_button('X', () => {
-                        fetchAndRenderData(frm, {});
-                    });
-                }
                 buttion(frm)
             } else {
                 console.error("Error fetching data from API.");
@@ -49,14 +22,36 @@ function fetchAndRenderData(frm, limit, filters) {
 
 frappe.ui.form.on("Report List", {
     refresh(frm) {
+        // to hide unwanted buttons
+        // $('.standard-actions').hide();
+        //
 
         if (!frm.is_new() == 1) {
+            console.log("frm.is_new()",frm.is_new());
             $('.standard-actions').hide();
             fetchAndRenderData(frm, {});
             DataExportButton(frm)
         }
-        console.log(filters_data)
-        
+
+        frm.add_custom_button('Filter', () => {
+            frappe.prompt(
+                filter_fields = filters_data?.map(fltr => ({
+                    fieldname: fltr.fieldname,
+                    fieldtype: fltr.fieldtype,
+                    label: fltr.label,
+                    options: fltr.options,
+                    default: fltr.default || ''
+                })) || [],
+                function (values) {
+                    let appliedFilters = {};
+                    filter_fields.forEach(filter => {
+                        appliedFilters[filter.fieldname] = values[filter.fieldname];
+                    });
+                    fetchAndRenderData(frm, {}, appliedFilters);
+                },
+                __('Apply')
+            );
+        });
 
     }
 });

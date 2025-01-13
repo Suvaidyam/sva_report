@@ -3,6 +3,7 @@ import csv
 from io import StringIO
 from frappe.utils.response import Response
 import copy
+from datetime import datetime
 
 allowed_types = ['Data','Date', 'Int', 'Select', 'Check', 'Phone','Small Text','Text']
 child_types = ['Table', 'Table MultiSelect']
@@ -306,7 +307,21 @@ class DocTypeInfo:
         # print("res_data",res_data)
         return res_data
     def write_csv_data(report_doc,fields, fields_info, filters):
-        headers = [field.get('label') for field in fields]
+        fields_a = fields_info.get('columns') or [] 
+        index = 0
+        for column in report_doc.columns:
+            if column.get('fieldname') in ['name','docstatus', 'creation','modified','modified_by','owner']:
+                fields.insert(index,{
+                    "label":column.get('label'), 
+                    "fieldname":column.get('fieldname'),
+                    "fieldtype":column.get('fieldtype'),
+                    "options":column.get('options')
+                })
+                fields_a.append(column.get('fieldname'))
+            index += 1
+        headers = [(column.get('label') if (column := next(
+                            (col for col in report_doc.get('columns', []) 
+                            if col.get('fieldname') == field.get('fieldname')), None)) else field.get('label')) for field in fields]
         csv_buffer = StringIO()
         csv_writer = csv.writer(csv_buffer)
         csv_writer.writerow(headers)
@@ -318,7 +333,7 @@ class DocTypeInfo:
         while True:
             rows = frappe.get_list(
                 report_doc.ref_doctype,
-                fields=fields_info.get('columns'),
+                fields=fields_a,
                 filters=filters,
                 order_by=report_doc.order_by if report_doc.order_by else None,
                 start=skip,
@@ -365,15 +380,32 @@ class DocTypeInfo:
                 count_res = frappe.get_list(report_doc.ref_doctype,fields=["count(name) as count"],filters=filters)
                 if len(count_res):
                     count = count_res[0].count
+                fields_a = fields_info.get('columns') or [] 
+                index = 0
+                for column in report_doc.columns:
+                    if column.get('fieldname') in ['name','docstatus', 'creation','modified','modified_by','owner']:
+                        fields.insert(index,{
+                            "label":column.get('label'), 
+                            "fieldname":column.get('fieldname'),
+                            "fieldtype":column.get('fieldtype'),
+                            "options":column.get('options')
+                        })
+                        fields_a.append(column.get('fieldname'))
+                    index += 1
                 rows = frappe.get_list(
                     report_doc.ref_doctype,
-                    fields=fields_info.get('columns'),
+                    fields=fields_a,
                     filters=filters,
                     order_by=report_doc.order_by if report_doc.order_by else None,
                     start=skip,
                     page_length=limit
                 )
                 results = DocTypeInfo.create_data(rows, fields_info,report_doc.repeat_parent_data)
+                for result in results:
+                    if result.get('docstatus') is not None:
+                        result['docstatus'] = 'Draft' if result.get('docstatus') == 0 else ('Submitted' if result.get('docstatus') == 1 else 'Cancelled')
+                    if result.get('modified') is not None:
+                        result['modified'] = datetime.strptime(str(result.get('modified')), "%Y-%m-%d %H:%M:%S.%f").date()
                 return {
                     'filters':[
                         {
