@@ -268,7 +268,6 @@ class DocTypeInfo:
         obj,index, res_data = fields, 1, []
         table_multiselect = [obj.get('children').get(child_table_name) for child_table_name in obj.get('children') if obj.get('children').get(child_table_name).get('info').get('fieldtype') == "Table MultiSelect"]
         tables = [obj.get('children').get(child_table_name) for child_table_name in obj.get('children') if obj.get('children').get(child_table_name).get('info').get('fieldtype') != "Table MultiSelect"]
-
         for row in rows:
             row.id = index
             index = index+1
@@ -277,12 +276,30 @@ class DocTypeInfo:
                 ct_info = child_table.get('info')
                 ct_columns = child_table.get('columns')
                 _ct_columns = child_table.get('_columns')
-                # print(ct_info.get('options'))
+                print("\n\n",ct_info,"\n\n")
                 # records = frappe.db.sql(f"select * from `tab{ct_info.get('options')}` where parent = '{row.name}' and parenttype = '{ct_info.get('parenttype')}'")
-                records = frappe.get_list(ct_info.get('options'),fields=ct_columns, filters={'parent':row.name,'parenttype':ct_info.get('parenttype')},ignore_permissions=True)
-                if len(_ct_columns):
-                    k = _ct_columns[0]
-                    row[f"{ct_info.get('fieldname')}.{k}"] = ",".join([record[k] for record in records])
+                records = frappe.get_list(ct_info.get('options'),fields=ct_columns, filters={
+                    'parent':row.name,
+                    'parenttype':ct_info.get('parenttype'),
+                    'parentfield':ct_info.get('fieldname')
+                    },
+                    ignore_permissions=True
+                )
+                for i,record in enumerate(records):
+                    if len(_rows) < (i+1):
+                        index = index+1
+                        if repeat_parent:
+                            _r = copy.deepcopy(row)
+                            _r.update({'id':index})
+                            _rows.append(_r)
+                        else:
+                            _rows.append({'id':index})
+                    for k in _ct_columns:
+                        # print("data:",ct_info,k)
+                        _rows[i][f"{ct_info.get('fieldname')}.{k}"] = record.get(k, None)
+                # if len(_ct_columns):
+                #     k = _ct_columns[0]
+                #     row[f"{ct_info.get('fieldname')}.{k}"] = ",".join([record[k] for record in records])
             _rows.append(row)
             for child_table in tables:
                 ct_info = child_table.get('info')
