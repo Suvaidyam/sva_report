@@ -276,7 +276,6 @@ class DocTypeInfo:
                 ct_info = child_table.get('info')
                 ct_columns = child_table.get('columns')
                 _ct_columns = child_table.get('_columns')
-                print("\n\n",ct_info,"\n\n")
                 # records = frappe.db.sql(f"select * from `tab{ct_info.get('options')}` where parent = '{row.name}' and parenttype = '{ct_info.get('parenttype')}'")
                 records = frappe.get_list(ct_info.get('options'),fields=ct_columns, filters={
                     'parent':row.name,
@@ -392,7 +391,7 @@ class DocTypeInfo:
 
         if report_doc.ref_doctype is not None:
             if csv_export == "1":
-                response = Response(DocTypeInfo.write_csv_data(report_doc,fields, fields_info, filters), content_type='text/csv')
+                response = Response(DocTypeInfo.write_csv_data(report_doc,fields, fields_info, filters), content_type='text/csv;charset=utf-8')
                 response.http_status_code = 200
                 response.headers["Content-Disposition"] = f"attachment; filename={report_doc.name.lower()}.csv"
                 return response
