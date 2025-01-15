@@ -394,7 +394,7 @@ class DocTypeInfo:
             if csv_export == "1":
                 response = Response(DocTypeInfo.write_csv_data(report_doc,fields, fields_info, filters), content_type='text/csv')
                 response.http_status_code = 200
-                response.headers["Content-Disposition"] = f"attachment; filename={doc_type.lower()}.csv"
+                response.headers["Content-Disposition"] = f"attachment; filename={report_doc.name.lower()}.csv"
                 return response
             else:
                 results, count = [], 0
