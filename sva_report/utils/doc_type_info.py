@@ -396,6 +396,7 @@ class DocTypeInfo:
                 response.http_status_code = 200
                 response.headers["Content-Disposition"] = f"attachment; filename={report_doc.name.lower()}.csv"
                 return response
+            
             else:
                 results, count = [], 0
                 count_res = frappe.get_list(report_doc.ref_doctype,fields=["count(name) as count"],filters=filters)
