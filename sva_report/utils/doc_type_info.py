@@ -358,9 +358,10 @@ class DocTypeInfo:
             for result in results:
                 if result.get('docstatus') is not None:
                     result['docstatus'] = 'Draft' if result.get('docstatus') == 0 else ('Submitted' if result.get('docstatus') == 1 else 'Cancelled')
-                if result.get('modified') is not None or result.get('creation') is not None:
-                        result['modified'] = datetime.strptime(str(result.get('modified')), "%Y-%m-%d %H:%M:%S.%f").date()
-                        result['creation'] = datetime.strptime(str(result.get('creation')), "%Y-%m-%d %H:%M:%S.%f").date()
+                if result.get('modified') is not None:
+                        result['modified'] = datetime.strptime(str(result.get('modified')), "%Y-%m-%d %H:%M:%S.%f").date() 
+                if result.get('creation') is not None:
+                    result['creation'] = datetime.strptime(str(result.get('creation')), "%Y-%m-%d %H:%M:%S.%f").date()
             res_data = []
             csv_buffer = StringIO()
             csv_writer = csv.writer(csv_buffer)
@@ -426,8 +427,9 @@ class DocTypeInfo:
                 for result in results:
                     if result.get('docstatus') is not None:
                         result['docstatus'] = 'Draft' if result.get('docstatus') == 0 else ('Submitted' if result.get('docstatus') == 1 else 'Cancelled')
-                    if result.get('modified') is not None or result.get('creation') is not None:
-                        result['modified'] = datetime.strptime(str(result.get('modified')), "%Y-%m-%d %H:%M:%S.%f").date()
+                    if result.get('modified') is not None:
+                        result['modified'] = datetime.strptime(str(result.get('modified')), "%Y-%m-%d %H:%M:%S.%f").date() 
+                    if result.get('creation') is not None:
                         result['creation'] = datetime.strptime(str(result.get('creation')), "%Y-%m-%d %H:%M:%S.%f").date()
                 return {
                     'filters':[
