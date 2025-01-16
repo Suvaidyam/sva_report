@@ -287,7 +287,7 @@ class DocTypeInfo:
                 for i,record in enumerate(records):
                     if len(_rows) < (i+1):
                         index = index+1
-                        if repeat_parent:
+                        if repeat_parent or i == 0:
                             _r = copy.deepcopy(row)
                             _r.update({'id':index})
                             _rows.append(_r)
@@ -299,7 +299,6 @@ class DocTypeInfo:
                 # if len(_ct_columns):
                 #     k = _ct_columns[0]
                 #     row[f"{ct_info.get('fieldname')}.{k}"] = ",".join([record[k] for record in records])
-            _rows.append(row)
             for child_table in tables:
                 ct_info = child_table.get('info')
                 ct_columns = child_table.get('columns')
@@ -309,15 +308,16 @@ class DocTypeInfo:
                 for i,record in enumerate(records):
                     if len(_rows) < (i+1):
                         index = index+1
-                        if repeat_parent:
+                        if repeat_parent or i == 0:
                             _r = copy.deepcopy(row)
                             _r.update({'id':index})
                             _rows.append(_r)
                         else:
                             _rows.append({'id':index})
                     for k in _ct_columns:
-                        # print("data:",ct_info,k)
                         _rows[i][f"{ct_info.get('fieldname')}.{k}"] = record.get(k, None)
+            if not len(_rows):
+                _rows.append(row)
             res_data.extend(_rows)
         # print("res_data",res_data)
         return res_data
