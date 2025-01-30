@@ -12,7 +12,7 @@ app_license = "mit"
 # include js, css files in header of desk.html
 import time
 app_include_css = f"/assets/sva_report/css/sva_report.css?t={time.time()}"
-# app_include_js = "/assets/sva_report/js/sva_report.js"
+app_include_js = f"/assets/sva_report/js/custom_import.js?ver={time.time()}"
 
 # include js, css files in header of web template
 # web_include_css = "/assets/sva_report/css/sva_report.css"
